@@ -1,0 +1,46 @@
+C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    08/25/2018 18:31:15 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE 3PHASEINVERTER
+OBJECT MODULE PLACED IN .\Objects\3PhaseInverter.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE 3PhaseInverter.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Lis
+                    -tings\3PhaseInverter.lst) TABS(2) OBJECT(.\Objects\3PhaseInverter.obj)
+
+line level    source
+
+   1          #include "3PhaseInverter.h"
+   2          
+   3          void TurnOFFALLSwitches()
+   4          { 
+   5   1        TurnOFF_HU; 
+   6   1        TurnOFF_HV; 
+   7   1        TurnOFF_HW; 
+   8   1        TurnOFF_LU; 
+   9   1        TurnOFF_LV; 
+  10   1        TurnOFF_LW; 
+  11   1      }
+  12          
+  13          void Inverter_ControlGPIO_Init()
+  14          {
+  15   1        TurnOFFALLSwitches();
+  16   1        P1M1 &= 0x9d;
+  17   1        P1M0 |= 0x62;
+  18   1        P3M0 |= 0x20;
+  19   1        P3M1 &= 0xdf;
+  20   1        P5M0 |= 0x10;
+  21   1        P5M1 &= 0xef;
+  22   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     35    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,460 @@
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SVPWM
+OBJECT MODULE PLACED IN .\Objects\SVPWM.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SVPWM.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\SVP
+                    -WM.lst) TABS(2) OBJECT(.\Objects\SVPWM.obj)
+
+line level    source
+
+   1          #include "SVPWM.h"
+   2          #include "3PhaseInverter.h"
+   3          
+   4          bit PhaseU_Target;
+   5          bit PhaseV_Target;
+   6          bit PhaseW_Target;
+   7          
+   8          sbit debug = P1^0;
+   9          
+  10          unsigned int T07,T1,T2;
+  11          
+  12          bit SVPFirstHalfSector;
+  13          
+  14          long Udcdvsqrt3, TSwitch,Udc;
+  15          
+  16          unsigned char SVPWMCurrentZone = 0;
+  17          
+  18          unsigned char sectornum ;
+  19          unsigned char CurrentTargetVector = 0;
+  20          unsigned char NextTargetVector = 0;
+  21          
+  22          unsigned int CurrentSVPSectorTime, NextSVPSectorTime;
+  23          
+  24          unsigned int code T1Array[]={1774,
+  25          1755,1737,1718,1698,1678,
+  26          1657,1636,1614,1592,1569,
+  27          1546,1522,1498,1473,1448,
+  28          1423,1397,1370,1344,1316,
+  29          1289,1261,1233,1204,1175,
+  30          1145,1115,1085,1055,1024,
+  31          993,961,930,898,866,
+  32          833,800,767,734,700,
+  33          667,633,599,565,530,
+  34          495,461,426,391,356,
+  35          320,285,250,214,178,
+  36          143,107,71,36,0,
+  37          36,71,107,143,178,
+  38          214,250,285,320,356,
+  39          391,426,461,495,530,
+  40          565,599,633,667,700,
+  41          734,767,800,833,866,
+  42          898,930,961,993,1024,
+  43          1055,1085,1115,1145,1175,
+  44          1204,1233,1261,1289,1316,
+  45          1344,1370,1397,1423,1448,
+  46          1473,1498,1522,1546,1569,
+  47          1592,1614,1636,1657,1678,
+  48          1698,1718,1737,1755,1774,
+  49          1755,1737,1718,1698,1678,
+  50          1657,1636,1614,1592,1569,
+  51          1546,1522,1498,1473,1448,
+  52          1423,1397,1370,1344,1316,
+  53          1289,1261,1233,1204,1175,
+  54          1145,1115,1085,1055,1024,
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 2   
+
+  55          993,961,930,898,866,
+  56          833,800,767,734,700,
+  57          667,633,599,565,530,
+  58          495,461,426,391,356,
+  59          320,285,250,214,178,
+  60          143,107,71,36,0,
+  61          36,71,107,143,178,
+  62          214,250,285,320,356,
+  63          391,426,461,495,530,
+  64          565,599,633,667,700,
+  65          734,767,800,833,866,
+  66          898,930,961,993,1024,
+  67          1055,1085,1115,1145,1175,
+  68          1204,1233,1261,1289,1316,
+  69          1344,1370,1397,1423,1448,
+  70          1473,1498,1522,1546,1569,
+  71          1592,1614,1636,1657,1678,
+  72          1698,1718,1737,1755,1774,
+  73          1755,1737,1718,1698,1678,
+  74          1657,1636,1614,1592,1569,
+  75          1546,1522,1498,1473,1448,
+  76          1423,1397,1370,1344,1316,
+  77          1289,1261,1233,1204,1175,
+  78          1145,1115,1085,1055,1024,
+  79          993,961,930,898,866,
+  80          833,800,767,734,700,
+  81          667,633,599,565,530,
+  82          495,461,426,391,356,
+  83          320,285,250,214,178,
+  84          143,107,71,36,0,
+  85          36,71,107,143,178,
+  86          214,250,285,320,356,
+  87          391,426,461,495,530,
+  88          565,599,633,667,700,
+  89          734,767,800,833,866,
+  90          898,930,961,993,1024,
+  91          1055,1085,1115,1145,1175,
+  92          1204,1233,1261,1289,1316,
+  93          1344,1370,1397,1423,1448,
+  94          1473,1498,1522,1546,1569,
+  95          1592,1614,1636,1657,1678,
+  96          1698,1718,1737,1755,1774,
+  97          };
+  98          
+  99          unsigned int code T2Array[]={
+ 100          0,36,71,107,143,178,
+ 101          214,250,285,320,356,
+ 102          391,426,461,495,530,
+ 103          565,599,633,667,700,
+ 104          734,767,800,833,866,
+ 105          898,930,961,993,1024,
+ 106          1055,1085,1115,1145,1175,
+ 107          1204,1233,1261,1289,1316,
+ 108          1344,1370,1397,1423,1448,
+ 109          1473,1498,1522,1546,1569,
+ 110          1592,1614,1636,1657,1678,
+ 111          1698,1718,1737,1755,1774,
+ 112          1755,1737,1718,1698,1678,
+ 113          1657,1636,1614,1592,1569,
+ 114          1546,1522,1498,1473,1448,
+ 115          1423,1397,1370,1344,1316,
+ 116          1289,1261,1233,1204,1175,
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 3   
+
+ 117          1145,1115,1085,1055,1024,
+ 118          993,961,930,898,866,
+ 119          833,800,767,734,700,
+ 120          667,633,599,565,530,
+ 121          495,461,426,391,356,
+ 122          320,285,250,214,178,
+ 123          143,107,71,36,0,
+ 124          36,71,107,143,178,
+ 125          214,250,285,320,356,
+ 126          391,426,461,495,530,
+ 127          565,599,633,667,700,
+ 128          734,767,800,833,866,
+ 129          898,930,961,993,1024,
+ 130          1055,1085,1115,1145,1175,
+ 131          1204,1233,1261,1289,1316,
+ 132          1344,1370,1397,1423,1448,
+ 133          1473,1498,1522,1546,1569,
+ 134          1592,1614,1636,1657,1678,
+ 135          1698,1718,1737,1755,1774,
+ 136          1755,1737,1718,1698,1678,
+ 137          1657,1636,1614,1592,1569,
+ 138          1546,1522,1498,1473,1448,
+ 139          1423,1397,1370,1344,1316,
+ 140          1289,1261,1233,1204,1175,
+ 141          1145,1115,1085,1055,1024,
+ 142          993,961,930,898,866,
+ 143          833,800,767,734,700,
+ 144          667,633,599,565,530,
+ 145          495,461,426,391,356,
+ 146          320,285,250,214,178,
+ 147          143,107,71,36,0,
+ 148          36,71,107,143,178,
+ 149          214,250,285,320,356,
+ 150          391,426,461,495,530,
+ 151          565,599,633,667,700,
+ 152          734,767,800,833,866,
+ 153          898,930,961,993,1024,
+ 154          1055,1085,1115,1145,1175,
+ 155          1204,1233,1261,1289,1316,
+ 156          1344,1370,1397,1423,1448,
+ 157          1473,1498,1522,1546,1569,
+ 158          1592,1614,1636,1657,1678,
+ 159          1698,1718,1737,1755,1774,
+ 160          1755,1737,1718,1698,1678,
+ 161          1657,1636,1614,1592,1569,
+ 162          1546,1522,1498,1473,1448,
+ 163          1423,1397,1370,1344,1316,
+ 164          1289,1261,1233,1204,1175,
+ 165          1145,1115,1085,1055,1024,
+ 166          993,961,930,898,866,
+ 167          833,800,767,734,700,
+ 168          667,633,599,565,530,
+ 169          495,461,426,391,356,
+ 170          320,285,250,214,178,
+ 171          143,107,71,36,0,
+ 172          };
+ 173          
+ 174          
+ 175          void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned int length)
+ 176          {
+ 177   1        T1 = T1Array[deg];
+ 178   1        T2 = T2Array[deg];
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 4   
+
+ 179   1        T07 = (2048 - T1 - T2);
+ 180   1        if((deg >= 0) && (deg < 60))
+ 181   1        {
+ 182   2          sectornum = 1;
+ 183   2          SVPFirstHalfSector = deg > 30;
+ 184   2        }
+ 185   1        if((deg >= 60) && (deg < 120))
+ 186   1        {
+ 187   2          sectornum = 2;
+ 188   2          SVPFirstHalfSector = deg < 90;
+ 189   2        }
+ 190   1        if((deg >= 120) && (deg < 180))
+ 191   1        {
+ 192   2          sectornum = 3;
+ 193   2          SVPFirstHalfSector = deg > 150;
+ 194   2        }
+ 195   1        if((deg >= 180) && (deg < 240))
+ 196   1        {
+ 197   2          sectornum = 4;
+ 198   2          SVPFirstHalfSector = deg < 210;
+ 199   2        }
+ 200   1        if((deg >= 240) && (deg < 300))
+ 201   1        {
+ 202   2          sectornum = 5;
+ 203   2          SVPFirstHalfSector = deg > 270;
+ 204   2        }
+ 205   1        if((deg >= 300) && (deg < 360))
+ 206   1        {
+ 207   2          sectornum = 6;
+ 208   2          SVPFirstHalfSector = deg < 330;
+ 209   2        }
+ 210   1      }
+*** WARNING C280 IN LINE 175 OF SVPWM.c: 'length': unreferenced local variable
+ 211          
+ 212          void CalculateNextSpwmZoneTimeAndVector()
+ 213          {
+ 214   1        if(SVPWMCurrentZone < 2)
+ 215   1          SVPWMCurrentZone ++;
+ 216   1        else
+ 217   1          SVPWMCurrentZone = 0;
+ 218   1        if((SVPWMCurrentZone == 1))
+ 219   1        {
+ 220   2          if(SVPFirstHalfSector)
+ 221   2          {
+ 222   3            switch(sectornum)
+ 223   3            {
+ 224   4              case 1:
+ 225   4                NextTargetVector = 4;
+ 226   4                break;
+ 227   4              case 2:
+ 228   4                NextTargetVector = 2;
+ 229   4                break;
+ 230   4              case 3:
+ 231   4                NextTargetVector = 2;
+ 232   4                break;
+ 233   4              case 4:
+ 234   4                NextTargetVector = 1;
+ 235   4                break;
+ 236   4              case 5:
+ 237   4                NextTargetVector = 1;
+ 238   4                break;
+ 239   4              case 6:
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 5   
+
+ 240   4                NextTargetVector = 4;
+ 241   4                break;
+ 242   4            }
+ 243   3            NextSVPSectorTime = T1;
+ 244   3          }
+ 245   2          else
+ 246   2          {   
+ 247   3            switch(sectornum)
+ 248   3            {
+ 249   4              case 1:
+ 250   4                NextTargetVector = 6;
+ 251   4                break;
+ 252   4              case 2:
+ 253   4                NextTargetVector = 6;
+ 254   4                break;
+ 255   4              case 3:
+ 256   4                NextTargetVector = 3;
+ 257   4                break;
+ 258   4              case 4:
+ 259   4                NextTargetVector = 3;
+ 260   4                break;
+ 261   4              case 5:
+ 262   4                NextTargetVector = 5;
+ 263   4                break;
+ 264   4              case 6:
+ 265   4                NextTargetVector = 5;
+ 266   4                break;
+ 267   4            }
+ 268   3            NextSVPSectorTime = T2;
+ 269   3          }
+ 270   2        }
+ 271   1        else if((SVPWMCurrentZone == 2))
+ 272   1        {
+ 273   2          if(SVPFirstHalfSector)
+ 274   2          {
+ 275   3            switch(sectornum)
+ 276   3            {
+ 277   4              case 1:
+ 278   4                NextTargetVector = 6;
+ 279   4                break;
+ 280   4              case 2:
+ 281   4                NextTargetVector = 6;
+ 282   4                break;
+ 283   4              case 3:
+ 284   4                NextTargetVector = 3;
+ 285   4                break;
+ 286   4              case 4:
+ 287   4                NextTargetVector = 3;
+ 288   4                break;
+ 289   4              case 5:
+ 290   4                NextTargetVector = 5;
+ 291   4                break;
+ 292   4              case 6:
+ 293   4                NextTargetVector = 5;
+ 294   4                break;
+ 295   4            }
+ 296   3            NextSVPSectorTime = T2;
+ 297   3          }
+ 298   2          else
+ 299   2          {
+ 300   3            switch(sectornum)
+ 301   3            {
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 6   
+
+ 302   4              case 1:
+ 303   4                NextTargetVector = 4;
+ 304   4                break;
+ 305   4              case 2:
+ 306   4                NextTargetVector = 2;
+ 307   4                break;
+ 308   4              case 3:
+ 309   4                NextTargetVector = 2;
+ 310   4                break;
+ 311   4              case 4:
+ 312   4                NextTargetVector = 1;
+ 313   4                break;
+ 314   4              case 5:
+ 315   4                NextTargetVector = 1;
+ 316   4                break;
+ 317   4              case 6:
+ 318   4                NextTargetVector = 4;
+ 319   4                break;
+ 320   4            }
+ 321   3            NextSVPSectorTime = T1;
+ 322   3          }
+ 323   2        }
+ 324   1        else 
+ 325   1        {
+ 326   2          NextTargetVector = 0;
+ 327   2          NextSVPSectorTime = T07;
+ 328   2        }
+ 329   1        NextSVPSectorTime = ~NextSVPSectorTime;
+ 330   1      }
+ 331          
+ 332          unsigned int SwitchVector()
+ 333          {
+ 334   1        debug = 0;
+ 335   1        CurrentSVPSectorTime = NextSVPSectorTime;
+ 336   1        switch(NextTargetVector)
+ 337   1        {
+ 338   2          case 0:
+ 339   2            TurnOFF_HU;
+ 340   2            TurnOFF_HV;
+ 341   2            TurnOFF_HW;
+ 342   2            CalculateNextSpwmZoneTimeAndVector();
+ 343   2            TurnON_LU;
+ 344   2            TurnON_LV;
+ 345   2            TurnON_LW;
+ 346   2            break;
+ 347   2          case 7:
+ 348   2            TurnOFF_LU;
+ 349   2            TurnOFF_LV;
+ 350   2            TurnOFF_LW;
+ 351   2            CalculateNextSpwmZoneTimeAndVector();
+ 352   2            TurnON_HU;
+ 353   2            TurnON_HV;
+ 354   2            TurnON_HW;
+ 355   2            break;
+ 356   2          case 1: 
+ 357   2            TurnOFF_HU;
+ 358   2            TurnOFF_HV;
+ 359   2            TurnOFF_LW;
+ 360   2            CalculateNextSpwmZoneTimeAndVector();
+ 361   2            TurnON_LU;
+ 362   2            TurnON_LV;
+ 363   2            TurnON_HW;
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 7   
+
+ 364   2            break;
+ 365   2          case 2:
+ 366   2            TurnOFF_HU;
+ 367   2            TurnOFF_LV;
+ 368   2            TurnOFF_HW;
+ 369   2            CalculateNextSpwmZoneTimeAndVector();
+ 370   2            TurnON_LU;
+ 371   2            TurnON_HV;
+ 372   2            TurnON_LW;
+ 373   2            break;
+ 374   2          case 3:
+ 375   2            TurnOFF_HU;
+ 376   2            TurnOFF_LV;
+ 377   2            TurnOFF_LW;
+ 378   2            CalculateNextSpwmZoneTimeAndVector();
+ 379   2            TurnON_LU;
+ 380   2            TurnON_HV;
+ 381   2            TurnON_HW;
+ 382   2            break;
+ 383   2          case 4:
+ 384   2            TurnOFF_LU;
+ 385   2            TurnOFF_HV;
+ 386   2            TurnOFF_HW;
+ 387   2            CalculateNextSpwmZoneTimeAndVector();
+ 388   2            TurnON_HU;
+ 389   2            TurnON_LV;
+ 390   2            TurnON_LW;
+ 391   2            break;
+ 392   2          case 5:
+ 393   2            TurnOFF_LU;
+ 394   2            TurnOFF_HV;
+ 395   2            TurnOFF_LW;
+ 396   2            CalculateNextSpwmZoneTimeAndVector();
+ 397   2            TurnON_HU;
+ 398   2            TurnON_LV;
+ 399   2            TurnON_HW;
+ 400   2            break;
+ 401   2          case 6:
+ 402   2            TurnOFF_LU;
+ 403   2            TurnOFF_LV;
+ 404   2            TurnOFF_HW;
+ 405   2            CalculateNextSpwmZoneTimeAndVector();
+ 406   2            TurnON_HU;
+ 407   2            TurnON_HV;
+ 408   2            TurnON_LW;
+ 409   2            break;
+ 410   2          default:      
+ 411   2            CalculateNextSpwmZoneTimeAndVector();
+ 412   2            break;
+ 413   2        }
+ 414   1        debug = 1;
+ 415   1        return CurrentSVPSectorTime;
+ 416   1      }
+ 417          
+ 418          
+ 419          
+ 420          
+ 421          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    697    ----
+C51 COMPILER V9.59.0.0   SVPWM                                                             08/25/2018 18:31:14 PAGE 8   
+
+   CONSTANT SIZE    =   1444    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     26       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
