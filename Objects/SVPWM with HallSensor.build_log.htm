@@ -25,24 +25,29 @@ Project File Date:  07/30/2018
 Rebuild target 'Target 1'
 assembling STARTUP.A51...
 compiling SVPWM.c...
-SVPWM.c(175): warning C280: 'length': unreferenced local variable
 compiling main.c...
-main.c(77): warning C206: 'SwitchVector': missing function-prototype
-main.c(126): warning C280: 'j': unreferenced local variable
-main.c(126): warning C280: 'k': unreferenced local variable
+main.c(84): warning C206: 'SwitchVector': missing function-prototype
+main.c(116): warning C209: 'DetermineCurrentElecCycle': too few actual parameters
+main.c(177): warning C280: 'j': unreferenced local variable
+main.c(177): warning C280: 'k': unreferenced local variable
 compiling BLDC with Hall.c...
 compiling 3PhaseInverter.c...
 linking...
-*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
-    SYMBOL:  CC2418
-    MODULE:  .\Objects\BLDC with Hall.obj (BLDC_WITH_HALL)
-*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
-    SYMBOL:  CC2418
-    MODULE:  .\Objects\BLDC with Hall.obj (BLDC_WITH_HALL)
-    ADDRESS: 09BCH
-Program Size: data=81.1 xdata=0 code=3415
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_UART_WRITE_INT_VALUE?MAIN
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?DETERMINECURRENTELECCYCLE?BLDC_WITH_HALL
+    CALLER1: ?PR?TM0_ISR?MAIN
+    CALLER2: ?PR?TM1_ISR?MAIN
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_CALCULATEINVERTERVECTORSWIDTH_POLAR?SVPWM
+    CALLER1: ?C_C51STARTUP
+    CALLER2: ?PR?TM1_ISR?MAIN
+Program Size: data=96.2 xdata=0 code=3759
 creating hex file from ".\Objects\SVPWM with HallSensor"...
-".\Objects\SVPWM with HallSensor" - 0 Error(s), 6 Warning(s).
+".\Objects\SVPWM with HallSensor" - 0 Error(s), 8 Warning(s).
 Build Time Elapsed:  00:00:01
 </pre>
 </body>

@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/25/2018 18:31:14 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/26/2018 18:52:18 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_WITH_HALL
@@ -15,7 +15,7 @@ line level    source
    5          
    6          unsigned int ONtime, OFFtime, TSwitchBLDC;
    7          
-   8          unsigned char PreviousBLDCElecCycle = 0;
+   8          static unsigned char PreviousBLDCElecCycle = 0;
    9          
   10          bit SwitchON;
   11          
@@ -23,7 +23,7 @@ line level    source
   13          
   14          void SetBLDCSpeed(unsigned char speed)
   15          {
-  16   1        ONtime = (((unsigned long)TSwitchBLDC * speed) / 255) & 0xffff;
+  16   1        ONtime = (((unsigned long)TSwitchBLDC * speed) >> 8) & 0xffff;
   17   1        OFFtime = TSwitchBLDC - ONtime;
   18   1        //ONtime = 100;
   19   1        //OFFtime = 400;
@@ -31,231 +31,182 @@ line level    source
   21          
   22          void BLDCDeadtimeDelay(unsigned int t20418)
   23          {
-  24   1        while(t20418 > 1)
-  25   1        {
-  26   2          t20418 -= 1;
-  27   2        }
-  28   1      }
-  29          
-  30          void HallGpioInit()
-  31          {
-  32   1        P3M0 &= 0xe3;
-  33   1        P3M1 &= 0xe3;
-  34   1        HA = 1;
-  35   1        HB = 1;
-  36   1        HC = 1;
-  37   1        PreviousBLDCElecCycle = 0;
-  38   1        TSwitchBLDC = 512;
-  39   1      }
-  40          /*
-  41          unsigned char DetermineCurrentElecCycle(bit reverse)
-  42          {
-  43            if(HA && !HB && HC)
-  44              if(reverse)
-  45                return 4;
-  46              else
-  47                return 1;
-  48              
-  49            if(HA && !HB && !HC)
-  50              if(reverse)
-  51                return 5;
-  52              else
-  53                return 2;
-  54              
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/25/2018 18:31:14 PAGE 2   
+  24   1        while(--t20418);
+  25   1      }
+  26          
+  27          void HallGpioInit()
+  28          {
+  29   1        P3M0 &= 0xe3;
+  30   1        P3M1 &= 0xe3;
+  31   1        HA = 1;
+  32   1        HB = 1;
+  33   1        HC = 1;
+  34   1        PreviousBLDCElecCycle = 0;
+  35   1        TSwitchBLDC = 512;
+  36   1      }
+  37          /*
+  38          unsigned char DetermineCurrentElecCycle(bit reverse)
+  39          {
+  40            if(HA && !HB && HC)
+  41              if(reverse)
+  42                return 4;
+  43              else
+  44                return 1;
+  45              
+  46            if(HA && !HB && !HC)
+  47              if(reverse)
+  48                return 5;
+  49              else
+  50                return 2;
+  51              
+  52            if(HA && HB && !HC)
+  53              if(reverse)
+  54                return 6;
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/26/2018 18:52:18 PAGE 2   
 
-  55            if(HA && HB && !HC)
-  56              if(reverse)
-  57                return 6;
-  58              else
-  59                return 3;
-  60              
-  61            if(!HA && HB && !HC)
-  62              if(reverse)
-  63                return 1;
-  64              else
-  65                return 4;
-  66              
-  67            if(!HA && HB && HC)
-  68              if(reverse)
-  69                return 2;
-  70              else
-  71                return 5;
-  72              
-  73            if(!HA && !HB && HC)
-  74              if(reverse)
-  75                return 3;
-  76              else
-  77                return 6;
-  78            return 0;
-  79          }*/
-  80          unsigned char DetermineCurrentElecCycle(bit reverse)
-  81          {
-  82   1        if(!HA && !HB && !HC)
-  83   1          if(reverse)
-  84   1            return 2;
-  85   1          else
-  86   1            return 6;
-  87   1          
-  88   1        if(HA && !HB && !HC)
-  89   1          if(reverse)
-  90   1            return 3;
-  91   1          else
-  92   1            return 1;
-  93   1          
-  94   1        if(HA && HB && !HC)
-  95   1          if(reverse)
-  96   1            return 4;
-  97   1          else
-  98   1            return 2;
-  99   1          
- 100   1        if(HA && HB && HC)
- 101   1          if(reverse)
- 102   1            return 5;
- 103   1          else
- 104   1            return 3;
- 105   1          
- 106   1        if(!HA && HB && HC)
- 107   1          if(reverse)
- 108   1            return 6;
- 109   1          else
- 110   1            return 4;
- 111   1          
- 112   1        if(!HA && !HB && HC)
- 113   1          if(reverse)
- 114   1            return 1;
- 115   1          else
- 116   1            return 5;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/25/2018 18:31:14 PAGE 3   
+  55              else
+  56                return 3;
+  57              
+  58            if(!HA && HB && !HC)
+  59              if(reverse)
+  60                return 1;
+  61              else
+  62                return 4;
+  63              
+  64            if(!HA && HB && HC)
+  65              if(reverse)
+  66                return 2;
+  67              else
+  68                return 5;
+  69              
+  70            if(!HA && !HB && HC)
+  71              if(reverse)
+  72                return 3;
+  73              else
+  74                return 6;
+  75            return 0;
+  76          }*/
+  77          unsigned char DetermineCurrentElecCycle(bit reverse)
+  78          {
+  79   1        if(!HA && !HB && !HC)
+  80   1          if(reverse)
+  81   1            return 2;
+  82   1          else
+  83   1            return 6;
+  84   1          
+  85   1        if(HA && !HB && !HC)
+  86   1          if(reverse)
+  87   1            return 3;
+  88   1          else
+  89   1            return 1;
+  90   1          
+  91   1        if(HA && HB && !HC)
+  92   1          if(reverse)
+  93   1            return 4;
+  94   1          else
+  95   1            return 2;
+  96   1          
+  97   1        if(HA && HB && HC)
+  98   1          if(reverse)
+  99   1            return 5;
+ 100   1          else
+ 101   1            return 3;
+ 102   1          
+ 103   1        if(!HA && HB && HC)
+ 104   1          if(reverse)
+ 105   1            return 6;
+ 106   1          else
+ 107   1            return 4;
+ 108   1          
+ 109   1        if(!HA && !HB && HC)
+ 110   1          if(reverse)
+ 111   1            return 1;
+ 112   1          else
+ 113   1            return 5;
+ 114   1        return 0;
+ 115   1      }
+ 116          
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/26/2018 18:52:18 PAGE 3   
 
- 117   1        return 0;
- 118   1      }
- 119          
- 120          void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
- 121          {
- 122   1        switch(eleccycle)
- 123   1        {
- 124   2          case 1: {
- 125   3            TurnOFF_HV; 
- 126   3            TurnOFF_HW; 
- 127   3            TurnOFF_LU; 
- 128   3            TurnOFF_LW;   
- 129   3            if(PreviousBLDCElecCycle != eleccycle)    
- 130   3              BLDCDeadtimeDelay(80);
- 131   3            TurnON_HU;
- 132   3            if(L_Enable)
- 133   3              TurnON_LV;
- 134   3            else 
- 135   3              TurnOFF_LV;
- 136   3            break;
- 137   3          }
- 138   2          case 2: { 
- 139   3            TurnOFF_HV; 
- 140   3            TurnOFF_HW; 
- 141   3            TurnOFF_LU; 
- 142   3            TurnOFF_LV;  
- 143   3            if(PreviousBLDCElecCycle != eleccycle)    
- 144   3              BLDCDeadtimeDelay(80);
- 145   3            TurnON_HU;
- 146   3            if(L_Enable)
- 147   3              TurnON_LW;
- 148   3            else 
- 149   3              TurnOFF_LW;
- 150   3            break;
- 151   3          }
- 152   2          case 3: {
- 153   3            TurnOFF_HU;  
- 154   3            TurnOFF_HW; 
- 155   3            TurnOFF_LU; 
- 156   3            TurnOFF_LV;  
- 157   3            if(PreviousBLDCElecCycle != eleccycle)    
- 158   3              BLDCDeadtimeDelay(80);
- 159   3            TurnON_HV;
+ 117          void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
+ 118          {
+ 119   1        if(PreviousBLDCElecCycle != eleccycle)
+ 120   1        { 
+ 121   2          TurnOFFALLSwitches();
+ 122   2          BLDCDeadtimeDelay(80);
+ 123   2        }
+ 124   1        switch(eleccycle)
+ 125   1        {
+ 126   2          case 1: {
+ 127   3            TurnON_HU;
+ 128   3            if(L_Enable)
+ 129   3              TurnON_LV;
+ 130   3            else 
+ 131   3              TurnOFF_LV;
+ 132   3            break;
+ 133   3          }
+ 134   2          case 2: {
+ 135   3            TurnON_HU;
+ 136   3            if(L_Enable)
+ 137   3              TurnON_LW;
+ 138   3            else 
+ 139   3              TurnOFF_LW;
+ 140   3            break;
+ 141   3          }
+ 142   2          case 3: {
+ 143   3            TurnON_HV;
+ 144   3            if(L_Enable)
+ 145   3              TurnON_LW;
+ 146   3            else 
+ 147   3              TurnOFF_LW;
+ 148   3            break;
+ 149   3          }
+ 150   2          case 4: {
+ 151   3            TurnON_HV;
+ 152   3            if(L_Enable)
+ 153   3              TurnON_LU;
+ 154   3            else 
+ 155   3              TurnOFF_LU;
+ 156   3            break;
+ 157   3          }
+ 158   2          case 5: {
+ 159   3            TurnON_HW;
  160   3            if(L_Enable)
- 161   3              TurnON_LW;
+ 161   3              TurnON_LU;
  162   3            else 
- 163   3              TurnOFF_LW;
+ 163   3              TurnOFF_LU;
  164   3            break;
  165   3          }
- 166   2          case 4: {
- 167   3            TurnOFF_HU; 
- 168   3            TurnOFF_HW; 
- 169   3            TurnOFF_LV; 
- 170   3            TurnOFF_LW; 
- 171   3            if(PreviousBLDCElecCycle != eleccycle)    
- 172   3              BLDCDeadtimeDelay(80);
- 173   3            TurnON_HV;
- 174   3            if(L_Enable)
- 175   3              TurnON_LU;
- 176   3            else 
- 177   3              TurnOFF_LU;
- 178   3            break;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/25/2018 18:31:14 PAGE 4   
+ 166   2          case 6: {
+ 167   3            TurnON_HW;
+ 168   3            if(L_Enable)
+ 169   3              TurnON_LV;
+ 170   3            else 
+ 171   3              TurnOFF_LV;
+ 172   3            break;
+ 173   3          }
+ 174   2        }
+ 175   1        PreviousBLDCElecCycle = eleccycle;
+ 176   1      } 
+ 177          
+ 178          unsigned int BLDCTimerEventHandler()
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/26/2018 18:52:18 PAGE 4   
 
- 179   3          }
- 180   2          case 5: {
- 181   3            TurnOFF_HU; 
- 182   3            TurnOFF_HV; 
- 183   3            TurnOFF_LV; 
- 184   3            TurnOFF_LW;   
- 185   3            if(PreviousBLDCElecCycle != eleccycle)    
- 186   3              BLDCDeadtimeDelay(80);
- 187   3            TurnON_HW;
- 188   3            if(L_Enable)
- 189   3              TurnON_LU;
- 190   3            else 
- 191   3              TurnOFF_LU;
- 192   3            break;
- 193   3          }
- 194   2          case 6: { 
- 195   3            TurnOFF_HU; 
- 196   3            TurnOFF_HV;  
- 197   3            TurnOFF_LU; 
- 198   3            TurnOFF_LW;   
- 199   3            if(PreviousBLDCElecCycle != eleccycle)    
- 200   3              BLDCDeadtimeDelay(80);
- 201   3              
- 202   3            TurnON_HW;
- 203   3            if(L_Enable)
- 204   3              TurnON_LV;
- 205   3            else 
- 206   3              TurnOFF_LV;
- 207   3            break;
- 208   3          }
- 209   2        }
- 210   1        CC2418(); 
- 211   1        PreviousBLDCElecCycle = eleccycle;
- 212   1      } 
- 213          
- 214          
- 215          
- 216          
- 217          unsigned int BLDCTimerEventHandler()
- 218          { 
- 219   1        SwitchON = !SwitchON;
- 220   1        if(ONtime)
- 221   1        {
- 222   2          if(OFFtime)
- 223   2            UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),SwitchON);
- 224   2          else  
- 225   2            UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),1);
- 226   2        }
- 227   1        else  
- 228   1          UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),0);
- 229   1      //  return 418;
- 230   1        if(SwitchON)
- 231   1        {
- 232   2          return ONtime;
- 233   2        }
- 234   1        return OFFtime;
- 235   1      }
+ 179          { 
+ 180   1        SwitchON = !SwitchON;
+ 181   1        UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),SwitchON);
+ 182   1      //  return 418;
+ 183   1        if(SwitchON)
+ 184   1        {
+ 185   2          return ONtime;
+ 186   2        }
+ 187   1        return OFFtime;
+ 188   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    466    ----
+   CODE SIZE        =    323    ----
    CONSTANT SIZE    =   ----    ----
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    08/25/2018 18:31:14 PAGE 5   
-
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =      7       1

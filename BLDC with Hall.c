@@ -5,7 +5,7 @@
 
 unsigned int ONtime, OFFtime, TSwitchBLDC;
 
-unsigned char PreviousBLDCElecCycle = 0;
+static unsigned char PreviousBLDCElecCycle = 0;
 
 bit SwitchON;
 
@@ -13,7 +13,7 @@ bit BLDCReverse =1;
 
 void SetBLDCSpeed(unsigned char speed)
 {
-	ONtime = (((unsigned long)TSwitchBLDC * speed) / 255) & 0xffff;
+	ONtime = (((unsigned long)TSwitchBLDC * speed) >> 8) & 0xffff;
 	OFFtime = TSwitchBLDC - ONtime;
 	//ONtime = 100;
 	//OFFtime = 400;
@@ -21,10 +21,7 @@ void SetBLDCSpeed(unsigned char speed)
 
 void BLDCDeadtimeDelay(unsigned int t20418)
 {
-	while(t20418 > 1)
-	{
-		t20418 -= 1;
-	}
+	while(--t20418);
 }
 
 void HallGpioInit()
@@ -119,15 +116,14 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 
 void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 {
+	if(PreviousBLDCElecCycle != eleccycle)
+	{	
+		TurnOFFALLSwitches();
+		BLDCDeadtimeDelay(80);
+	}
 	switch(eleccycle)
 	{
 		case 1: {
-			TurnOFF_HV; 
-			TurnOFF_HW; 
-			TurnOFF_LU; 
-			TurnOFF_LW;		
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
 			TurnON_HU;
 			if(L_Enable)
 				TurnON_LV;
@@ -135,13 +131,7 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 				TurnOFF_LV;
 			break;
 		}
-		case 2: { 
-			TurnOFF_HV; 
-			TurnOFF_HW; 
-			TurnOFF_LU; 
-			TurnOFF_LV;  
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
+		case 2: {
 			TurnON_HU;
 			if(L_Enable)
 				TurnON_LW;
@@ -150,12 +140,6 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 			break;
 		}
 		case 3: {
-			TurnOFF_HU;  
-			TurnOFF_HW; 
-			TurnOFF_LU; 
-			TurnOFF_LV;  
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
 			TurnON_HV;
 			if(L_Enable)
 				TurnON_LW;
@@ -164,12 +148,6 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 			break;
 		}
 		case 4: {
-			TurnOFF_HU; 
-			TurnOFF_HW; 
-			TurnOFF_LV; 
-			TurnOFF_LW; 
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
 			TurnON_HV;
 			if(L_Enable)
 				TurnON_LU;
@@ -178,12 +156,6 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 			break;
 		}
 		case 5: {
-			TurnOFF_HU; 
-			TurnOFF_HV; 
-			TurnOFF_LV; 
-			TurnOFF_LW; 	
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
 			TurnON_HW;
 			if(L_Enable)
 				TurnON_LU;
@@ -191,14 +163,7 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 				TurnOFF_LU;
 			break;
 		}
-		case 6: {	
-			TurnOFF_HU; 
-			TurnOFF_HV;  
-			TurnOFF_LU; 
-			TurnOFF_LW; 	
-			if(PreviousBLDCElecCycle != eleccycle)		
-				BLDCDeadtimeDelay(80);
-				
+		case 6: {
 			TurnON_HW;
 			if(L_Enable)
 				TurnON_LV;
@@ -207,25 +172,13 @@ void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
 			break;
 		}
 	}
-	CC2418();	
 	PreviousBLDCElecCycle = eleccycle;
 }	
-
-
-
 
 unsigned int BLDCTimerEventHandler()
 {	
 	SwitchON = !SwitchON;
-	if(ONtime)
-	{
-		if(OFFtime)
-			UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),SwitchON);
-		else	
-			UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),1);
-	}
-	else	
-		UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),0);
+	UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),SwitchON);
 //	return 418;
 	if(SwitchON)
 	{
