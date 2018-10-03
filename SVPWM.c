@@ -5,413 +5,240 @@ bit PhaseU_Target;
 bit PhaseV_Target;
 bit PhaseW_Target;
 
-sbit debug = P1^0;
-
-unsigned int T07,T1,T2;
+unsigned int T07,T1,T2,PWMB,PWMM,PWMS;
 
 bit SVPFirstHalfSector;
 
-long Udcdvsqrt3, TSwitch,Udc;
-
-unsigned char SVPWMCurrentZone = 0;
-
-unsigned char sectornum ;
-unsigned char CurrentTargetVector = 0;
-unsigned char NextTargetVector = 0;
-
-unsigned int CurrentSVPSectorTime, NextSVPSectorTime;
-
-unsigned int code T1Array[]={222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
+unsigned int code T1Array[]={0,
+4,9,13,18,22,
+27,31,35,40,44,
+48,53,57,61,66,
+70,74,78,83,87,
+91,95,99,103,107,
+111,115,119,123,127,
+131,135,138,142,146,
+149,153,156,160,163,
+167,170,173,176,180,
+183,186,189,192,195,
+197,200,203,205,208,
+211,213,215,218,220,
+218,215,213,211,208,
+205,203,200,197,195,
+192,189,186,183,180,
+176,173,170,167,163,
+160,156,153,149,146,
+142,138,135,131,127,
+123,119,115,111,107,
+103,99,95,91,87,
+83,78,74,70,66,
+61,57,53,48,44,
+40,35,31,27,22,
 18,13,9,4,0,
 4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
+27,31,35,40,44,
+48,53,57,61,66,
+70,74,78,83,87,
+91,95,99,103,107,
+111,115,119,123,127,
+131,135,138,142,146,
+149,153,156,160,163,
+167,170,173,176,180,
+183,186,189,192,195,
+197,200,203,205,208,
+211,213,215,218,220,
+218,215,213,211,208,
+205,203,200,197,195,
+192,189,186,183,180,
+176,173,170,167,163,
+160,156,153,149,146,
+142,138,135,131,127,
+123,119,115,111,107,
+103,99,95,91,87,
+83,78,74,70,66,
+61,57,53,48,44,
+40,35,31,27,22,
 18,13,9,4,0,
 4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
+27,31,35,40,44,
+48,53,57,61,66,
+70,74,78,83,87,
+91,95,99,103,107,
+111,115,119,123,127,
+131,135,138,142,146,
+149,153,156,160,163,
+167,170,173,176,180,
+183,186,189,192,195,
+197,200,203,205,208,
+211,213,215,218,220,
+218,215,213,211,208,
+205,203,200,197,195,
+192,189,186,183,180,
+176,173,170,167,163,
+160,156,153,149,146,
+142,138,135,131,127,
+123,119,115,111,107,
+103,99,95,91,87,
+83,78,74,70,66,
+61,57,53,48,44,
+40,35,31,27,22,
 18,13,9,4,0,
-4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222
+
 };
 
-unsigned int code T2Array[]={0,
-4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
-18,13,9,4,0,
-4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
-18,13,9,4,0,
-4,9,13,18,22,
-27,31,36,40,44,
-49,53,58,62,66,
-71,75,79,83,88,
-92,96,100,104,108,
-112,116,120,124,128,
-132,136,139,143,147,
-150,154,158,161,165,
-168,171,175,178,181,
-184,187,190,193,196,
-199,202,204,207,210,
-212,215,217,219,222,
-219,217,215,212,210,
-207,204,202,199,196,
-193,190,187,184,181,
-178,175,171,168,165,
-161,158,154,150,147,
-143,139,136,132,128,
-124,120,116,112,108,
-104,100,96,92,88,
-83,79,75,71,66,
-62,58,53,49,44,
-40,36,31,27,22,
-18,13,9,4,0,
+unsigned int code T2Array[]={220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+222,224,226,228,230,
+232,234,236,237,239,
+240,242,243,244,245,
+246,247,248,249,250,
+251,252,252,253,253,
+253,254,254,254,254,
+254,254,254,253,253,
+253,252,252,251,250,
+249,248,247,246,245,
+244,243,242,240,239,
+237,236,234,232,230,
+228,226,224,222,220,
+
+
 };
 
 
-void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned int length)
+void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 {
-	length = length * 3 / 4;
-	T1 = T1Array[deg] * length >> 5;
-	T2 = T2Array[deg] *length >> 5;
-	T07 = (1536 - T1 - T2);
-	if((deg >= 0) && (deg < 60))
+	T1 = (T1Array[deg] * length) >> 8;
+	T2 = (T2Array[deg] * length) >> 8;
+	T07 = (255-T2) >> 1;
+	
+	PWMS = T07;
+	PWMM = T07 + T1;
+	PWMB = T07 + T2;
+	
+	EA = 0;
+	
+	if((deg < 60))
 	{
-		sectornum = 1;
-		SVPFirstHalfSector = deg > 30;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = T07;
+		SFRS = 0;
+		PWM2L = PWMM;
+		PWM0L = PWMB;
 	}
-	else if((deg >= 60) && (deg < 120))
+	else if((deg < 120))
 	{
-		sectornum = 2;
-		SVPFirstHalfSector = deg < 90;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = T07;
+		SFRS = 0;
+		PWM0L = PWMM;
+		PWM2L = PWMB;
 	}
-	else if((deg >= 120) && (deg < 180))
+	else if((deg < 180))
 	{
-		sectornum = 3;
-		SVPFirstHalfSector = deg > 150;
+		PWM0L = T07;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = PWMM;
+		SFRS = 0;
+		PWM2L = PWMB;
 	}
-	else if((deg >= 180) && (deg < 240))
+	else if((deg < 240))
 	{
-		sectornum = 4;
-		SVPFirstHalfSector = deg < 210;
+		PWM0L = T07;
+		PWM2L = PWMM;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = PWMB;
+		SFRS = 0;
 	}
-	else if((deg >= 240) && (deg < 300))
+	else if((deg < 300))
 	{
-		sectornum = 5;
-		SVPFirstHalfSector = deg > 270;
+		PWM2L = T07;
+		PWM0L = PWMM;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = PWMB;
+		SFRS = 0;
 	}
-	else if((deg >= 300) && (deg < 360))
+	else if((deg < 360))
 	{
-		sectornum = 6;
-		SVPFirstHalfSector = deg < 330;
+		PWM2L = T07;
+		TA = 0X0AA;
+		TA = 0X55;
+		SFRS = 1;
+		PWM4L = PWMM;
+		SFRS = 0;
+		PWM0L = PWMB;
 	}
-}
-
-void CalculateNextSpwmZoneTimeAndVector()
-{
-	if(SVPWMCurrentZone < 2)
-		SVPWMCurrentZone ++;
-	else
-		SVPWMCurrentZone = 0;
-	if((SVPWMCurrentZone == 1))
-	{
-		if(SVPFirstHalfSector)
-		{
-			switch(sectornum)
-			{
-				case 1:
-					NextTargetVector = 4;
-					break;
-				case 2:
-					NextTargetVector = 2;
-					break;
-				case 3:
-					NextTargetVector = 2;
-					break;
-				case 4:
-					NextTargetVector = 1;
-					break;
-				case 5:
-					NextTargetVector = 1;
-					break;
-				case 6:
-					NextTargetVector = 4;
-					break;
-			}
-			NextSVPSectorTime = T1;
-		}
-		else
-		{		
-			switch(sectornum)
-			{
-				case 1:
-					NextTargetVector = 6;
-					break;
-				case 2:
-					NextTargetVector = 6;
-					break;
-				case 3:
-					NextTargetVector = 3;
-					break;
-				case 4:
-					NextTargetVector = 3;
-					break;
-				case 5:
-					NextTargetVector = 5;
-					break;
-				case 6:
-					NextTargetVector = 5;
-					break;
-			}
-			NextSVPSectorTime = T2;
-		}
-	}
-	else if((SVPWMCurrentZone == 2))
-	{
-		if(SVPFirstHalfSector)
-		{
-			switch(sectornum)
-			{
-				case 1:
-					NextTargetVector = 6;
-					break;
-				case 2:
-					NextTargetVector = 6;
-					break;
-				case 3:
-					NextTargetVector = 3;
-					break;
-				case 4:
-					NextTargetVector = 3;
-					break;
-				case 5:
-					NextTargetVector = 5;
-					break;
-				case 6:
-					NextTargetVector = 5;
-					break;
-			}
-			NextSVPSectorTime = T2;
-		}
-		else
-		{
-			switch(sectornum)
-			{
-				case 1:
-					NextTargetVector = 4;
-					break;
-				case 2:
-					NextTargetVector = 2;
-					break;
-				case 3:
-					NextTargetVector = 2;
-					break;
-				case 4:
-					NextTargetVector = 1;
-					break;
-				case 5:
-					NextTargetVector = 1;
-					break;
-				case 6:
-					NextTargetVector = 4;
-					break;
-			}
-			NextSVPSectorTime = T1;
-		}
-	}
-	else 
-	{
-		NextTargetVector = 0;
-		NextSVPSectorTime = T07;
-	}
-	NextSVPSectorTime = ~NextSVPSectorTime;
-}
-
-unsigned int SwitchVector()
-{
-	CurrentSVPSectorTime = NextSVPSectorTime;
-	switch(NextTargetVector)
-	{
-		case 0:
-			TurnOFF_HU;
-			TurnOFF_HV;
-			TurnOFF_HW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_LU;
-			TurnON_LV;
-			TurnON_LW;
-			break;
-		case 7:
-			TurnOFF_LU;
-			TurnOFF_LV;
-			TurnOFF_LW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_HU;
-			TurnON_HV;
-			TurnON_HW;
-			break;
-		case 1:	
-			TurnOFF_HU;
-			TurnOFF_HV;
-			TurnOFF_LW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_LU;
-			TurnON_LV;
-			TurnON_HW;
-			break;
-		case 2:
-			TurnOFF_HU;
-			TurnOFF_LV;
-			TurnOFF_HW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_LU;
-			TurnON_HV;
-			TurnON_LW;
-			break;
-		case 3:
-			TurnOFF_HU;
-			TurnOFF_LV;
-			TurnOFF_LW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_LU;
-			TurnON_HV;
-			TurnON_HW;
-			break;
-		case 4:
-			TurnOFF_LU;
-			TurnOFF_HV;
-			TurnOFF_HW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_HU;
-			TurnON_LV;
-			TurnON_LW;
-			break;
-		case 5:
-			TurnOFF_LU;
-			TurnOFF_HV;
-			TurnOFF_LW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_HU;
-			TurnON_LV;
-			TurnON_HW;
-			break;
-		case 6:
-			TurnOFF_LU;
-			TurnOFF_LV;
-			TurnOFF_HW;
-			CalculateNextSpwmZoneTimeAndVector();
-			TurnON_HU;
-			TurnON_HV;
-			TurnON_LW;
-			break;
-		default:			
-			CalculateNextSpwmZoneTimeAndVector();
-			break;
-	}
-	return CurrentSVPSectorTime;
+	EA = 1;
+	PMEN = 0X00;
+	PWMCON1 |= 0X10;
+	PWMCON0 |= 0X40;
 }
 
 

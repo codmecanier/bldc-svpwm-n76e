@@ -1,14 +1,14 @@
-#define HA P34
-#define HB P33 //problem is here always high
-#define HC P32
+#define HA P04
+#define HB P13 
+#define HC P14
 
 unsigned char DetermineCurrentElecCycle(bit reverse);
 
 void HallGpioInit();
 
 
-void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable);
+void UpdateBLDCInverter(unsigned char eleccycle);
 
-unsigned int BLDCTimerEventHandler();
+void BLDCTimerEventHandler();
 
 void SetBLDCSpeed(unsigned char speed);

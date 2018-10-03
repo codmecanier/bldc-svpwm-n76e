@@ -13,14 +13,14 @@
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STC8F2K64S4</Device>
-          <Vendor>STC</Vendor>
-          <Cpu>IRAM(0-0xFF) XRAM(0-0x07FF) IROM(0-0xFFF8) CLOCK(35000000) MODP2</Cpu>
+          <Device>N76E003</Device>
+          <Vendor>Nuvoton</Vendor>
+          <Cpu>IRAM(0 - 0xFF) IROM(0 - 0x47FF)  XRAM(0 - 0x2FF) CLOCK(16000000)</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile>"LIB\STARTUP.A51" ("Standard 8051 Startup Code")</StartupFile>
           <FlashDriverDll></FlashDriverDll>
-          <DeviceId>63032</DeviceId>
-          <RegisterFile>STC8.H</RegisterFile>
+          <DeviceId>0</DeviceId>
+          <RegisterFile>N76E003.H</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -36,8 +36,8 @@
           <BinPath></BinPath>
           <IncludePath></IncludePath>
           <LibPath></LibPath>
-          <RegisterFilePath>STC\</RegisterFilePath>
-          <DBRegisterFilePath>STC\</DBRegisterFilePath>
+          <RegisterFilePath>Nuvoton\</RegisterFilePath>
+          <DBRegisterFilePath>Nuvoton\</DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -110,11 +110,11 @@
           <SimDllName>S8051.DLL</SimDllName>
           <SimDllArguments></SimDllArguments>
           <SimDlgDll>DP51.DLL</SimDlgDll>
-          <SimDlgDllArguments>-pDP8051</SimDlgDllArguments>
+          <SimDlgDllArguments></SimDlgDllArguments>
           <TargetDllName>S8051.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
           <TargetDlgDll>TP51.DLL</TargetDlgDll>
-          <TargetDlgDllArguments>-p51</TargetDlgDllArguments>
+          <TargetDlgDllArguments></TargetDlgDllArguments>
         </DllOption>
         <DebugOption>
           <OPTHX>
@@ -125,7 +125,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>1</UseSimulator>
+            <UseSimulator>0</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -137,7 +137,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Simulator>
           <Target>
-            <UseTarget>0</UseTarget>
+            <UseTarget>1</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>0</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -149,7 +149,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>-1</TargetSelection>
+          <TargetSelection>11</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -163,21 +163,21 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile></InitializationFile>
-            <Driver></Driver>
+            <Driver>BIN\Nuvoton_8051_Keil_uVision_Driver.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
           <Flash1>
-            <UseTargetDll>0</UseTargetDll>
+            <UseTargetDll>1</UseTargetDll>
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
-            <UpdateFlashBeforeDebugging>0</UpdateFlashBeforeDebugging>
+            <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>0</Capability>
             <DriverSelection>-1</DriverSelection>
           </Flash1>
-          <bUseTDR>0</bUseTDR>
+          <bUseTDR>1</bUseTDR>
           <Flash2></Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -200,7 +200,7 @@
             <HadIROM>1</HadIROM>
             <Moda2>0</Moda2>
             <Moddp2>0</Moddp2>
-            <Modp2>1</Modp2>
+            <Modp2>0</Modp2>
             <Mod517dp>0</Mod517dp>
             <Mod517au>0</Mod517au>
             <Mode2>0</Mode2>
@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0xffff</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -273,7 +273,7 @@
               <IRO>
                 <Type>1</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0xfff9</Size>
+                <Size>0x4800</Size>
               </IRO>
               <IRA>
                 <Type>0</Type>
@@ -283,7 +283,7 @@
               <XRA>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x800</Size>
+                <Size>0x300</Size>
               </XRA>
               <XRA512>
                 <Type>0</Type>

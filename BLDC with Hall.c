@@ -1,38 +1,33 @@
-#include <STC8FXX.h>
+#include <N76E003.h>
 #include "BLDC with Hall.h"
 #include "3PhaseInverter.h"
-#define DEADTIME 80
 
-unsigned int ONtime, OFFtime, TSwitchBLDC;
+bit BLDCReverse = 1;
 
-static unsigned char PreviousBLDCElecCycle = 0;
-
-bit SwitchON;
-
-bit BLDCReverse =1;
+unsigned char BLDCSpeed;
 
 void SetBLDCSpeed(unsigned char speed)
 {
-	ONtime = (((unsigned long)TSwitchBLDC * speed) >> 8) & 0xffff;
-	OFFtime = TSwitchBLDC - ONtime;
-	//ONtime = 100;
-	//OFFtime = 400;
-}
-
-void BLDCDeadtimeDelay(unsigned int t20418)
-{
-	while(--t20418);
+	BLDCSpeed = speed;
 }
 
 void HallGpioInit()
 {
-	P3M0 &= 0xe3;
-	P3M1 &= 0xe3;
+	P0M1 &= 0XE7;
+	P0M2 &= 0XE7;
+	P1M1 &= 0XEB;
+	P1M2 &= 0XEB;	
+	TA = 0X0AA;
+	TA = 0X55;
+	SFRS = 1;
+	P1S |= 0X18;
+	P0S |= 0X08;
+	TA = 0X0AA;
+	TA = 0X55;
+	SFRS = 0;
 	HA = 1;
 	HB = 1;
 	HC = 1;
-	PreviousBLDCElecCycle = 0;
-	TSwitchBLDC = 512;
 }
 /*
 unsigned char DetermineCurrentElecCycle(bit reverse)
@@ -73,10 +68,12 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 		else
 			return 6;
 	return 0;
-}*/
-unsigned char DetermineCurrentElecCycle(bit reverse)
+}
+*/
+
+unsigned char DetermineHallState(bit reverse)
 {
-	if(!HA && !HB && !HC)
+		if(!HA && !HB && !HC)
 		if(reverse)
 			return 2;
 		else
@@ -113,76 +110,100 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 			return 5;
 	return 0;
 }
-
-void UpdateBLDCInverter(unsigned char eleccycle, bit L_Enable)
+unsigned char DetermineCurrentElecCycle(bit reverse)
 {
-	if(PreviousBLDCElecCycle != eleccycle)
-	{	
-		TurnOFFALLSwitches();
-		BLDCDeadtimeDelay(80);
+	unsigned char i,j,k;
+	j = 3;
+	while(j)
+	{
+		i = DetermineHallState(reverse);
+		if(k == i)
+		{
+			j--;
+		}
+		k = i;
 	}
+	return k;
+}
+
+void UpdateBLDCInverter(unsigned char eleccycle)
+{
+	EA = 0;
 	switch(eleccycle)
 	{
-		case 1: {
-			TurnON_HU;
-			if(L_Enable)
-				TurnON_LV;
-			else 
-				TurnOFF_LV;
+		case 1: {			
+			PMEN = 0X30;
+			PWM0L = BLDCSpeed;
+			PWM2L = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
 		case 2: {
-			TurnON_HU;
-			if(L_Enable)
-				TurnON_LW;
-			else 
-				TurnOFF_LW;
+			PMEN = 0X0C;
+			PWM0L = BLDCSpeed;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWM4L = 0;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
 		case 3: {
-			TurnON_HV;
-			if(L_Enable)
-				TurnON_LW;
-			else 
-				TurnOFF_LW;
+			PMEN = 0X03;
+			PWM2L = BLDCSpeed;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWM4L = 0;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
-		case 4: {
-			TurnON_HV;
-			if(L_Enable)
-				TurnON_LU;
-			else 
-				TurnOFF_LU;
+		case 4: {			
+			PMEN = 0X30;
+			PWM2L = BLDCSpeed;
+			PWM0L = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
 		case 5: {
-			TurnON_HW;
-			if(L_Enable)
-				TurnON_LU;
-			else 
-				TurnOFF_LU;
+			PMEN = 0X0C;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWM4L = BLDCSpeed;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
+			PWM0L = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
 		case 6: {
-			TurnON_HW;
-			if(L_Enable)
-				TurnON_LV;
-			else 
-				TurnOFF_LV;
+			PMEN = 0X03;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWM4L = BLDCSpeed;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
+			PWM2L = 0;
+			PWMCON0 |= 0X40;
 			break;
 		}
+		case 0:
+			break;
 	}
-	PreviousBLDCElecCycle = eleccycle;
+	EA = 1;
 }	
 
-unsigned int BLDCTimerEventHandler()
+void BLDCTimerEventHandler()
 {	
-	SwitchON = !SwitchON;
-	UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse),SwitchON);
-//	return 418;
-	if(SwitchON)
-	{
-		return ONtime;
-	}
-	return OFFtime;
+	UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse));
 }

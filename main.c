@@ -1,19 +1,27 @@
-#include <STC8FXX.h>
+#include <N76E003.h>
 #include <SVPWM.h>
 #include <3PhaseInverter.h>
 #include <BLDC with Hall.h>
 #include "intrins.h"
 
-bit SVPWMmode = 1;
+bit SVPWMmode = 0;
+bit ReverseSpin = 1;
 
-unsigned int SpeedCount = 0;
+const ElecAngleOffestCCW = 267;
+const StableCount = 4;
+const ElecAngleOffestCW = 318;
+unsigned char SpeedRippleLimitforSVP = 3;
+unsigned int SpeedLowLimitforSVP = 700;
+unsigned int SatiSCyclesSwSVP;
+unsigned char Stablecnt;
+
+unsigned int SpeedCount;
 unsigned char PrevoiusMechinalCycle = 0;
 unsigned long CalcElectricAngle;
-
 unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 
 unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
-sbit debug = P1^0;
+sbit debug = P0^6;
 
 #define FOSC            30000000UL
 #define BRT             (65536 - FOSC / 115200 / 4)
@@ -40,13 +48,13 @@ void UartIsr() interrupt 4 using 1
 
 void UartInit()
 {
-    SCON = 0x50;
+ /*   SCON = 0x50;
     T2L = BRT;
     T2H = BRT >> 8;
     AUXR = 0x15;
     wptr = 0x00;
     rptr = 0x00;
-    busy = 0;
+    busy = 0;*/
 }
 
 void UartSend(char dat)
@@ -65,87 +73,136 @@ void UartSendStr(char *p)
 }
 
 
-void delay(unsigned int t)
+void delay(unsigned long t)
 {
 	while(t--);
 }
 
 
-void TM0_Isr() interrupt 1 using 1
+void TM1_Isr() interrupt 3 using 0
 {
-	unsigned int t;
-	TR0 = 0;
-	TF0 = 0;
-	if(SVPWMmode)
-	{	
-	//	debug = !debug;
-		while(1)
+	unsigned char CurrentMechinalCycle;		
+	
+	TR1 = 0;
+	TF1 = 0;
+	TH1 = 0xB3;
+	TL1 = 0x24;
+	TR1 = 1;      
+	
+	if(SpeedCount < 60000) SpeedCount++;
+	if(SpeedCount >= Previous1MechanicalDelay + (Previous1MechanicalDelay >> SpeedRippleLimitforSVP))
+	{
+		if(SVPWMmode)
 		{
-			t = SwitchVector();
-			if(t > 150)
+			debug = 1;
+			SVPWMmode = 0;
+			Stablecnt = 0;
+		}
+	}
+	CurrentMechinalCycle = DetermineCurrentElecCycle(0);
+	if(PrevoiusMechinalCycle != CurrentMechinalCycle)
+	{
+		if(ReverseSpin)
+			switch(CurrentMechinalCycle)
 			{
-				TL0 = t & 0xff;
-				TH0 = t >> 8; 
-				TR0 = 1;
-				break;
+				case 6:
+					Previous2MechanicalDelay = Previous1MechanicalDelay;
+					Previous1MechanicalDelay = SpeedCount;
+					SpeedCount = 0;	
+					if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
+					{
+						debug = 0;
+						if(Stablecnt >= 4)
+						{
+							SVPWMmode = 1;
+						}
+						else
+							Stablecnt += 1;
+					}
+					else
+					{
+						debug = 1;
+						Stablecnt = 0;
+						SVPWMmode = 0;
+					}
+					break;
+		/*		case 5:
+					SpeedCount = Previous1MechanicalDelay * 1 / 6;		
+					break;
+				case 4:
+					SpeedCount = Previous1MechanicalDelay * 2 / 6;		
+					break;
+				case 3:
+					SpeedCount = Previous1MechanicalDelay * 3 / 6;		 
+					break;
+				case 2:
+					SpeedCount = Previous1MechanicalDelay * 4 / 6;		
+					break;
+				case 1:
+					SpeedCount = Previous1MechanicalDelay * 5 / 6;		
+					break;*/
 			}
+		else switch(CurrentMechinalCycle)
+			{
+				case 1:
+					Previous2MechanicalDelay = Previous1MechanicalDelay;
+					Previous1MechanicalDelay = SpeedCount;
+					SpeedCount = 0;	
+					if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
+					{		
+						debug = 0;
+						if(Stablecnt >= 4)
+						{
+							SVPWMmode = 1;
+						}
+						else
+						Stablecnt += 1;
+					}
+					else
+					{
+						debug = 1;
+						SVPWMmode = 0;
+						Stablecnt = 0;
+					}
+					break;
+			/*	case 2:
+					SpeedCount = Previous1MechanicalDelay * 1 / 6;		
+					break;
+				case 3:
+					SpeedCount = Previous1MechanicalDelay * 2 / 6;		
+					break;
+				case 4:
+					SpeedCount = Previous1MechanicalDelay * 3 / 6;		 
+					break;
+				case 5:
+					SpeedCount = Previous1MechanicalDelay * 4 / 6;		
+					break;
+				case 6:
+					SpeedCount = Previous1MechanicalDelay * 5 / 6;		
+					break;*/
+			}
+		}
+	PrevoiusMechinalCycle = CurrentMechinalCycle;
+	CalcElectricAngle = (unsigned long)SpeedCount * 719 / ((unsigned long)Previous1MechanicalDelay + (unsigned long)Previous2MechanicalDelay);
+	if(SVPWMmode)
+	{		
+			if(CalcElectricAngle <= 360)
+			{
+				//CalcElectricAngle = CalcElectricAngle % 360;
+			if(ReverseSpin)
+				CalcElectricAngle += ElecAngleOffestCW;
 			else
-			{
-				while(--t);
-			}
+				CalcElectricAngle += ElecAngleOffestCCW;
+			if(CalcElectricAngle >= 360) 
+				CalcElectricAngle -= 360;
+			if(ReverseSpin)
+				CalcElectricAngle = 360 - CalcElectricAngle;
+			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 64);
 		}
 	}
 	else
 	{
-		t = BLDCTimerEventHandler();
-		t = ~t;
-		TL0 = t & 0xff;
-		TH0 = t >> 8; 
-		TR0 = 1;
-		
-	//	UpdateBLDCInverter(DetermineCurrentElecCycle(1),1);
-	}
-}
-
-void TM1_Isr() interrupt 3 using 0
-{
-	unsigned char CurrentMechinalCycle;
-	TF1 = 0;
-//		debug = !debug;		
-	if(SpeedCount < 65535) SpeedCount++;
-	CurrentMechinalCycle = DetermineCurrentElecCycle();
-	if(PrevoiusMechinalCycle != CurrentMechinalCycle)
-	{
-		if(CurrentMechinalCycle == 3)
-		{
-			Previous1MechanicalDelay = SpeedCount;
-			SpeedCount = 0;
-		}
-/*		switch(CurrentMechinalCycle)
-		{
-			case 6:		
-				CalculateInverterVectorsWidth_Polar(233, 255); break;
-			case 1:		
-				CalculateInverterVectorsWidth_Polar(300, 255); break;
-			case 2:		
-				CalculateInverterVectorsWidth_Polar(355, 255); break;
-			case 3:		
-				CalculateInverterVectorsWidth_Polar(45, 255); break;
-			case 4:		
-				CalculateInverterVectorsWidth_Polar(121, 255); break;
-			case 5:		
-				CalculateInverterVectorsWidth_Polar(173, 255); break;
-		}*/
-	}
-	PrevoiusMechinalCycle = CurrentMechinalCycle;
-	Previous2MechanicalDelay = Previous1MechanicalDelay;
-	CalcElectricAngle = (unsigned long)SpeedCount * 359 / (unsigned long)Previous1MechanicalDelay;
-	if(PreviousElectricAngle != CalcElectricAngle)
-	{	
-		if((CalcElectricAngle < 360) && SVPWMmode)
-		{
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 255);
-		}
+		BLDCTimerEventHandler();
 	}
 	PreviousElectricAngle = CalcElectricAngle;
 }
@@ -159,38 +216,37 @@ void UART_Write_Int_Value(unsigned int num)
 
 void TimerInit()
 {
-	AUXR |= 0xC0;
-	TMOD = 0x01;                             
-	TL0 = 0x66;                             
-	TH0 = 0xfc;
-	TH1 = 0xf0;
+	CKCON |= 0X18;
+	TMOD = 0x00;       
+	TH1 = 0x01;
 	TL1 = 0x24;
-	TR1 = 1;
-	TR0 = 1;                                 
-	ET0 = 1;   
+	TR1 = 1;      
 	ET1 = 1;
 	EA = 1;
 }
 
+
 void main(void)
 {
-	unsigned int i,j,k;
-	UartInit();
-  ES = 1;
-  EA = 1;
+	unsigned int i;
+//	UartInit();
+//  ES = 1;
+//  EA = 1;
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	TimerInit();
-	SetBLDCSpeed(255);
-	if(SVPWMmode)
-		CalculateInverterVectorsWidth_Polar(20,128);
-  UartSendStr("DAS02418");
+	SetBLDCSpeed(64);
+//  UartSendStr("DAS02418");
 	while(1)
 	{
-		for(i = 1;i <= 359;i ++)
+		for(i = 0;i <= 360;i ++)
 		{	
-//			delay(800);
+			
+	//	BLDCTimerEventHandler();
+	//		UpdateBLDCInverter(i);
+			delay(362);
 
+		//	CalculateInverterVectorsWidth_Polar(i, 12);
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");
