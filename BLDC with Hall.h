@@ -1,8 +1,10 @@
-#define HA P04
-#define HB P13 
-#define HC P14
+#define HAPort P04
+#define HBPort P13 
+#define HCPort P14
 
 unsigned char DetermineCurrentElecCycle(bit reverse);
+
+void UpdateHall();
 
 void HallGpioInit();
 

@@ -12,12 +12,12 @@ const StableCount = 4;
 const ElecAngleOffestCW = 318;
 unsigned char SpeedRippleLimitforSVP = 3;
 unsigned int SpeedLowLimitforSVP = 700;
-unsigned int SatiSCyclesSwSVP;
-unsigned char Stablecnt;
+unsigned int SatiSCyclesSwSVP = 0;
+unsigned char Stablecnt = 0;
 
-unsigned int SpeedCount;
+unsigned int SpeedCount = 0;
 unsigned char PrevoiusMechinalCycle = 0;
-unsigned long CalcElectricAngle;
+unsigned long CalcElectricAngle = 0;
 unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 
 unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
@@ -197,7 +197,7 @@ void TM1_Isr() interrupt 3 using 0
 				CalcElectricAngle -= 360;
 			if(ReverseSpin)
 				CalcElectricAngle = 360 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 64);
+			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 128);
 		}
 	}
 	else
@@ -225,6 +225,15 @@ void TimerInit()
 	EA = 1;
 }
 
+void PWM_Interrupu_Init()
+{
+	EIE |= 0X08;
+}
+
+void PWM_Interr_ISR() interrupt 13
+{
+	UpdateHall();
+}
 
 void main(void)
 {
@@ -235,7 +244,8 @@ void main(void)
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	TimerInit();
-	SetBLDCSpeed(64);
+	PWM_Interrupu_Init();
+	SetBLDCSpeed(128);
 //  UartSendStr("DAS02418");
 	while(1)
 	{

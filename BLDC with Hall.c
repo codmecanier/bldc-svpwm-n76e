@@ -3,12 +3,20 @@
 #include "3PhaseInverter.h"
 
 bit BLDCReverse = 1;
+bit HA,HB,HC;
 
 unsigned char BLDCSpeed;
 
 void SetBLDCSpeed(unsigned char speed)
 {
 	BLDCSpeed = speed;
+}
+
+void UpdateHall()
+{	
+	HA = HAPort;
+	HB = HBPort;
+	HC = HCPort;
 }
 
 void HallGpioInit()
@@ -25,9 +33,9 @@ void HallGpioInit()
 	TA = 0X0AA;
 	TA = 0X55;
 	SFRS = 0;
-	HA = 1;
-	HB = 1;
-	HC = 1;
+	HAPort = 1;
+	HBPort = 1;
+	HCPort = 1;
 }
 /*
 unsigned char DetermineCurrentElecCycle(bit reverse)
@@ -136,6 +144,13 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 			PWM0L = BLDCSpeed;
 			PWM2L = 0;
 			PWMCON0 |= 0X40;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWMINTC=0X10;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
 			break;
 		}
 		case 2: {
@@ -145,6 +160,7 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 			TA = 0X55;
 			SFRS = 1;
 			PWM4L = 0;
+			PWMINTC=0X10;
 			TA = 0X0AA;
 			TA = 0X55;
 			SFRS = 0;
@@ -158,6 +174,7 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 			TA = 0X55;
 			SFRS = 1;
 			PWM4L = 0;
+			PWMINTC=0X12;
 			TA = 0X0AA;
 			TA = 0X55;
 			SFRS = 0;
@@ -167,6 +184,13 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 		case 4: {			
 			PMEN = 0X30;
 			PWM2L = BLDCSpeed;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 1;
+			PWMINTC=0X12;
+			TA = 0X0AA;
+			TA = 0X55;
+			SFRS = 0;
 			PWM0L = 0;
 			PWMCON0 |= 0X40;
 			break;
@@ -177,6 +201,7 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 			TA = 0X55;
 			SFRS = 1;
 			PWM4L = BLDCSpeed;
+			PWMINTC=0X14;
 			TA = 0X0AA;
 			TA = 0X55;
 			SFRS = 0;
@@ -189,7 +214,8 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 			TA = 0X0AA;
 			TA = 0X55;
 			SFRS = 1;
-			PWM4L = BLDCSpeed;
+			PWM4L = BLDCSpeed;		
+			PWMINTC=0X14;
 			TA = 0X0AA;
 			TA = 0X55;
 			SFRS = 0;

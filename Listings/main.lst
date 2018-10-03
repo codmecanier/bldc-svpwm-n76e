@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 11:42:37 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -22,12 +22,12 @@ line level    source
   12          const ElecAngleOffestCW = 318;
   13          unsigned char SpeedRippleLimitforSVP = 3;
   14          unsigned int SpeedLowLimitforSVP = 700;
-  15          unsigned int SatiSCyclesSwSVP;
-  16          unsigned char Stablecnt;
+  15          unsigned int SatiSCyclesSwSVP = 0;
+  16          unsigned char Stablecnt = 0;
   17          
-  18          unsigned int SpeedCount;
+  18          unsigned int SpeedCount = 0;
   19          unsigned char PrevoiusMechinalCycle = 0;
-  20          unsigned long CalcElectricAngle;
+  20          unsigned long CalcElectricAngle = 0;
   21          unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAng
              -le;
   22          
@@ -62,7 +62,7 @@ line level    source
   51   1       /*   SCON = 0x50;
   52   1          T2L = BRT;
   53   1          T2H = BRT >> 8;
-C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 11:42:37 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 2   
 
   54   1          AUXR = 0x15;
   55   1          wptr = 0x00;
@@ -126,7 +126,7 @@ line level    source
              -icalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDel
              -ay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
  113   3                {
-C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 11:42:37 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 3   
 
  114   4                  debug = 0;
  115   4                  if(Stablecnt >= 4)
@@ -190,7 +190,7 @@ line level    source
  171   3              case 3:
  172   3                SpeedCount = Previous1MechanicalDelay * 2 / 6;    
  173   3                break;
-C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 11:42:37 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 4   
 
  174   3              case 4:
  175   3                SpeedCount = Previous1MechanicalDelay * 3 / 6;     
@@ -219,7 +219,7 @@ line level    source
  197   3              CalcElectricAngle -= 360;
  198   3            if(ReverseSpin)
  199   3              CalcElectricAngle = 360 - CalcElectricAngle;
- 200   3            CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 64);
+ 200   3            CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 128);
  201   3          }
  202   2        }
  203   1        else
@@ -247,69 +247,81 @@ line level    source
  225   1        EA = 1;
  226   1      }
  227          
- 228          
- 229          void main(void)
- 230          {
- 231   1        unsigned int i;
- 232   1      //  UartInit();
- 233   1      //  ES = 1;
- 234   1      //  EA = 1;
-C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 11:42:37 PAGE 5   
+ 228          void PWM_Interrupu_Init()
+ 229          {
+ 230   1        EIE |= 0X08;
+ 231   1      }
+ 232          
+ 233          void PWM_Interr_ISR() interrupt 13
+ 234          {
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 5   
 
- 235   1        Inverter_ControlGPIO_Init();
- 236   1        HallGpioInit();
- 237   1        TimerInit();
- 238   1        SetBLDCSpeed(64);
- 239   1      //  UartSendStr("DAS02418");
- 240   1        while(1)
- 241   1        {
- 242   2          for(i = 0;i <= 360;i ++)
- 243   2          { 
- 244   3            
- 245   3        //  BLDCTimerEventHandler();
- 246   3        //    UpdateBLDCInverter(i);
- 247   3            delay(362);
- 248   3      
- 249   3          //  CalculateInverterVectorsWidth_Polar(i, 12);
- 250   3      /*      UART_Write_Int_Value(CalcElectricAngle);
- 251   3            if(HA)
- 252   3              UartSendStr("HA+");
- 253   3            else  
- 254   3              UartSendStr("HA-");
- 255   3            
- 256   3            if(HB)
- 257   3              UartSendStr("HB+");
- 258   3            else  
- 259   3              UartSendStr("HB-");
- 260   3            
- 261   3            if(HC)
- 262   3              UartSendStr("HC+");
+ 235   1        UpdateHall();
+ 236   1      }
+ 237          
+ 238          void main(void)
+ 239          {
+ 240   1        unsigned int i;
+ 241   1      //  UartInit();
+ 242   1      //  ES = 1;
+ 243   1      //  EA = 1;
+ 244   1        Inverter_ControlGPIO_Init();
+ 245   1        HallGpioInit();
+ 246   1        TimerInit();
+ 247   1        PWM_Interrupu_Init();
+ 248   1        SetBLDCSpeed(128);
+ 249   1      //  UartSendStr("DAS02418");
+ 250   1        while(1)
+ 251   1        {
+ 252   2          for(i = 0;i <= 360;i ++)
+ 253   2          { 
+ 254   3            
+ 255   3        //  BLDCTimerEventHandler();
+ 256   3        //    UpdateBLDCInverter(i);
+ 257   3            delay(362);
+ 258   3      
+ 259   3          //  CalculateInverterVectorsWidth_Polar(i, 12);
+ 260   3      /*      UART_Write_Int_Value(CalcElectricAngle);
+ 261   3            if(HA)
+ 262   3              UartSendStr("HA+");
  263   3            else  
- 264   3              UartSendStr("HC-");
- 265   3            switch(DetermineCurrentElecCycle(0))
- 266   3            {
- 267   3              case 0:
- 268   3                UartSendStr("HALL ERROR\r\n"); break;
- 269   3              case 1:
- 270   3                UartSendStr("HALL 1\r\n");break;
- 271   3              case 2:
- 272   3                UartSendStr("HALL 2\r\n");break;
- 273   3              case 3:
- 274   3                UartSendStr("HALL 3\r\n");break;
- 275   3              case 4:
- 276   3                UartSendStr("HALL 4\r\n");break;
- 277   3              case 5:
- 278   3                UartSendStr("HALL 5\r\n");break;
- 279   3              case 6:
- 280   3                UartSendStr("HALL 6\r\n");break;
- 281   3            }*/
- 282   3          }
- 283   2        }
- 284   1      }
+ 264   3              UartSendStr("HA-");
+ 265   3            
+ 266   3            if(HB)
+ 267   3              UartSendStr("HB+");
+ 268   3            else  
+ 269   3              UartSendStr("HB-");
+ 270   3            
+ 271   3            if(HC)
+ 272   3              UartSendStr("HC+");
+ 273   3            else  
+ 274   3              UartSendStr("HC-");
+ 275   3            switch(DetermineCurrentElecCycle(0))
+ 276   3            {
+ 277   3              case 0:
+ 278   3                UartSendStr("HALL ERROR\r\n"); break;
+ 279   3              case 1:
+ 280   3                UartSendStr("HALL 1\r\n");break;
+ 281   3              case 2:
+ 282   3                UartSendStr("HALL 2\r\n");break;
+ 283   3              case 3:
+ 284   3                UartSendStr("HALL 3\r\n");break;
+ 285   3              case 4:
+ 286   3                UartSendStr("HALL 4\r\n");break;
+ 287   3              case 5:
+ 288   3                UartSendStr("HALL 5\r\n");break;
+ 289   3              case 6:
+ 290   3                UartSendStr("HALL 6\r\n");break;
+ 291   3            }*/
+ 292   3          }
+ 293   2        }
+ 294   1      }
 
+
+C51 COMPILER V9.59.0.0   MAIN                                                              10/03/2018 20:56:08 PAGE 6   
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    828    ----
+   CODE SIZE        =    892    ----
    CONSTANT SIZE    =     10    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
