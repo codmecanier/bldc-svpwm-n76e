@@ -10,8 +10,8 @@ bit ReverseSpin = 1;
 const ElecAngleOffestCCW = 267;
 const StableCount = 4;
 const ElecAngleOffestCW = 318;
-unsigned char SpeedRippleLimitforSVP = 3;
-unsigned int SpeedLowLimitforSVP = 700;
+unsigned char SpeedRippleLimitforSVP = 4;
+unsigned int SpeedLowLimitforSVP = 2400;
 unsigned int SatiSCyclesSwSVP = 0;
 unsigned char Stablecnt = 0;
 
@@ -21,7 +21,7 @@ unsigned long CalcElectricAngle = 0;
 unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 
 unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
-sbit debug = P0^6;
+sbit debug = P1^6;
 
 #define FOSC            30000000UL
 #define BRT             (65536 - FOSC / 115200 / 4)
@@ -79,15 +79,18 @@ void delay(unsigned long t)
 }
 
 
-void TM1_Isr() interrupt 3 using 0
+void TM1_Isr() interrupt 3
 {
 	unsigned char CurrentMechinalCycle;		
+	unsigned int EstimateSpeedCountByHall = 0;
 	
 	TR1 = 0;
 	TF1 = 0;
-	TH1 = 0xB3;
+	TH1 = 0xb8;
 	TL1 = 0x24;
-	TR1 = 1;      
+	ET1 = 0;
+	TR1 = 1;
+
 	
 	if(SpeedCount < 60000) SpeedCount++;
 	if(SpeedCount >= Previous1MechanicalDelay + (Previous1MechanicalDelay >> SpeedRippleLimitforSVP))
@@ -126,21 +129,21 @@ void TM1_Isr() interrupt 3 using 0
 						SVPWMmode = 0;
 					}
 					break;
-		/*		case 5:
-					SpeedCount = Previous1MechanicalDelay * 1 / 6;		
+				case 5:
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;		
 					break;
 				case 4:
-					SpeedCount = Previous1MechanicalDelay * 2 / 6;		
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;		
 					break;
 				case 3:
-					SpeedCount = Previous1MechanicalDelay * 3 / 6;		 
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;		 
 					break;
 				case 2:
-					SpeedCount = Previous1MechanicalDelay * 4 / 6;		
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;		
 					break;
 				case 1:
-					SpeedCount = Previous1MechanicalDelay * 5 / 6;		
-					break;*/
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;		
+					break;
 			}
 		else switch(CurrentMechinalCycle)
 			{
@@ -165,23 +168,36 @@ void TM1_Isr() interrupt 3 using 0
 						Stablecnt = 0;
 					}
 					break;
-			/*	case 2:
-					SpeedCount = Previous1MechanicalDelay * 1 / 6;		
+				case 2:
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;				
 					break;
 				case 3:
-					SpeedCount = Previous1MechanicalDelay * 2 / 6;		
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;		
 					break;
 				case 4:
-					SpeedCount = Previous1MechanicalDelay * 3 / 6;		 
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;		 
 					break;
 				case 5:
-					SpeedCount = Previous1MechanicalDelay * 4 / 6;		
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;		
 					break;
 				case 6:
-					SpeedCount = Previous1MechanicalDelay * 5 / 6;		
-					break;*/
+					EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;		
+					break;
 			}
 		}
+	if(SpeedCount != 0)
+	{
+		if(EstimateSpeedCountByHall > SpeedCount)
+		{
+			if(EstimateSpeedCountByHall - SpeedCount > 15)
+				SpeedCount = EstimateSpeedCountByHall;
+		}
+		else
+		{
+			if(SpeedCount - SpeedCount > 15)
+				SpeedCount = EstimateSpeedCountByHall;
+		}
+	}
 	PrevoiusMechinalCycle = CurrentMechinalCycle;
 	CalcElectricAngle = (unsigned long)SpeedCount * 719 / ((unsigned long)Previous1MechanicalDelay + (unsigned long)Previous2MechanicalDelay);
 	if(SVPWMmode)
@@ -197,7 +213,7 @@ void TM1_Isr() interrupt 3 using 0
 				CalcElectricAngle -= 360;
 			if(ReverseSpin)
 				CalcElectricAngle = 360 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 128);
+			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 22);
 		}
 	}
 	else
@@ -205,6 +221,7 @@ void TM1_Isr() interrupt 3 using 0
 		BLDCTimerEventHandler();
 	}
 	PreviousElectricAngle = CalcElectricAngle;
+	ET1 = 1;
 }
 
 void UART_Write_Int_Value(unsigned int num)
@@ -218,7 +235,7 @@ void TimerInit()
 {
 	CKCON |= 0X18;
 	TMOD = 0x00;       
-	TH1 = 0x01;
+	TH1 = 0x70;
 	TL1 = 0x24;
 	TR1 = 1;      
 	ET1 = 1;
@@ -241,11 +258,13 @@ void main(void)
 //	UartInit();
 //  ES = 1;
 //  EA = 1;
+	P1M1 &= 0xbf;
+	P1M2 |= 0x40;
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	TimerInit();
 	PWM_Interrupu_Init();
-	SetBLDCSpeed(128);
+	SetBLDCDirPWM(18,1);
 //  UartSendStr("DAS02418");
 	while(1)
 	{

@@ -181,10 +181,12 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = T07;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X15;
-		else		
+		else if(T2 - T1 > 30)
 			PWMINTC=0X13;
+		else	
+			PWMINTC=0X11;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
@@ -197,10 +199,12 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = T07;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X15;
-		else		
+		else if(T2 - T1 > 30)		
 			PWMINTC=0X11;
+		else	
+			PWMINTC=0X13;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
@@ -214,10 +218,12 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = PWMM;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X11;
-		else		
+		else	if(T2 - T1 > 30)	
 			PWMINTC=0X15;
+		else	
+			PWMINTC=0X13;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
@@ -231,10 +237,12 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = PWMB;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X11;
-		else		
+		else	if(T2 - T1 > 30)	
 			PWMINTC=0X13;
+		else	
+			PWMINTC=0X15;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
@@ -247,10 +255,12 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = PWMB;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X13;
-		else		
+		else	if(T2 - T1 > 30)	
 			PWMINTC=0X11;
+		else	
+			PWMINTC=0X15;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
@@ -262,19 +272,21 @@ void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
 		TA = 0X55;
 		SFRS = 1;
 		PWM4L = PWMM;
-		if(PWMM - T07 > 30)	
+		if(T1 > 30)	
 			PWMINTC=0X11;
-		else		
+		else	if(T2 - T1 > 30)	
 			PWMINTC=0X15;
+		else	
+			PWMINTC=0X11;
 		TA = 0X0AA;
 		TA = 0X55;
 		SFRS = 0;
 		PWM0L = PWMB;
 	}
-	EA = 1;
 	PMEN = 0X00;
 	PWMCON1 |= 0X10;
 	PWMCON0 |= 0X40;
+	EA = 1;
 }
 
 

@@ -7,9 +7,10 @@ bit HA,HB,HC;
 
 unsigned char BLDCSpeed;
 
-void SetBLDCSpeed(unsigned char speed)
+void SetBLDCDirPWM(unsigned char pwm, bit dir)
 {
-	BLDCSpeed = speed;
+	BLDCReverse = dir;
+	BLDCSpeed = pwm;
 }
 
 void UpdateHall()
@@ -79,7 +80,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 }
 */
 
-unsigned char DetermineHallState(bit reverse)
+unsigned char DetermineCurrentElecCycle(bit reverse)
 {
 		if(!HA && !HB && !HC)
 		if(reverse)
@@ -117,21 +118,6 @@ unsigned char DetermineHallState(bit reverse)
 		else
 			return 5;
 	return 0;
-}
-unsigned char DetermineCurrentElecCycle(bit reverse)
-{
-	unsigned char i,j,k;
-	j = 3;
-	while(j)
-	{
-		i = DetermineHallState(reverse);
-		if(k == i)
-		{
-			j--;
-		}
-		k = i;
-	}
-	return k;
 }
 
 void UpdateBLDCInverter(unsigned char eleccycle)

@@ -6,11 +6,11 @@ unsigned char DetermineCurrentElecCycle(bit reverse);
 
 void UpdateHall();
 
+void SetBLDCDirPWM(unsigned char pwm, bit dir);
+
 void HallGpioInit();
 
 
 void UpdateBLDCInverter(unsigned char eleccycle);
 
 void BLDCTimerEventHandler();
-
-void SetBLDCSpeed(unsigned char speed);
