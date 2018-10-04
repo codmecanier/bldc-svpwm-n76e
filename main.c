@@ -5,7 +5,7 @@
 #include "intrins.h"
 
 bit SVPWMmode = 0;
-bit ReverseSpin = 1;
+bit SVPReverseSpin = 1;
 
 const ElecAngleOffestCCW = 267;
 const StableCount = 4;
@@ -18,6 +18,7 @@ unsigned char Stablecnt = 0;
 unsigned int SpeedCount = 0;
 unsigned char PrevoiusMechinalCycle = 0;
 unsigned long CalcElectricAngle = 0;
+unsigned char SVPWMCurPWM = 0;
 unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 
 unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
@@ -105,7 +106,7 @@ void TM1_Isr() interrupt 3
 	CurrentMechinalCycle = DetermineCurrentElecCycle(0);
 	if(PrevoiusMechinalCycle != CurrentMechinalCycle)
 	{
-		if(ReverseSpin)
+		if(SVPReverseSpin)
 			switch(CurrentMechinalCycle)
 			{
 				case 6:
@@ -205,15 +206,15 @@ void TM1_Isr() interrupt 3
 			if(CalcElectricAngle <= 360)
 			{
 				//CalcElectricAngle = CalcElectricAngle % 360;
-			if(ReverseSpin)
+			if(SVPReverseSpin)
 				CalcElectricAngle += ElecAngleOffestCW;
 			else
 				CalcElectricAngle += ElecAngleOffestCCW;
 			if(CalcElectricAngle >= 360) 
 				CalcElectricAngle -= 360;
-			if(ReverseSpin)
+			if(SVPReverseSpin)
 				CalcElectricAngle = 360 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, 22);
+			CalculateInverterVectorsWidth_Polar(CalcElectricAngle, SVPWMCurPWM);
 		}
 	}
 	else
@@ -252,6 +253,15 @@ void PWM_Interr_ISR() interrupt 13
 	UpdateHall();
 }
 
+void SetMotorSpin(unsigned char pwm, bit dir)
+{
+	unsigned int blpwm;
+	blpwm = (int)pwm * 17 / 22;
+	SetBLDCDirPWM(blpwm,dir);
+	SVPWMCurPWM = pwm;
+	SVPReverseSpin = dir;
+}
+
 void main(void)
 {
 	unsigned int i;
@@ -263,8 +273,8 @@ void main(void)
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	TimerInit();
+	SetMotorSpin(60,1);
 	PWM_Interrupu_Init();
-	SetBLDCDirPWM(18,1);
 //  UartSendStr("DAS02418");
 	while(1)
 	{
