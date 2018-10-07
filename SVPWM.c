@@ -163,7 +163,7 @@ unsigned int code T2Array[]={220,
 };
 
 
-void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)
+void CalculateInverterVectorsWidth_Polar(unsigned int deg, unsigned char length)  using 1
 {
 	T1 = (T1Array[deg] * length) >> 8;
 	T2 = (T2Array[deg] * length) >> 8;

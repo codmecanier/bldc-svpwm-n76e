@@ -80,47 +80,75 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 }
 */
 
-unsigned char DetermineCurrentElecCycle(bit reverse)
-{
-		if(!HA && !HB && !HC)
-		if(reverse)
-			return 2;
+unsigned char DetermineCurrentElecCycle(bit reverse) using 1
+{	
+	if(HA)
+	{
+		if(HB)
+		{
+			if(HC)
+			{
+				if(reverse)
+					return 5;
+				else
+					return 3;		
+			}
+			else
+			{
+				if(reverse)
+					return 4;
+				else
+					return 2;
+			}
+		}
 		else
-			return 6;
-		
-	if(HA && !HB && !HC)
-		if(reverse)
-			return 3;
+		{
+			if(HC)
+			{
+			}
+			else
+			{
+				if(reverse)
+					return 3;
+				else
+					return 1;
+			}
+		}
+	}
+	else
+	{
+		if(HB)
+		{
+			if(HC)
+			{
+				if(reverse)
+					return 6;
+				else
+					return 4;
+			}
+		}
 		else
-			return 1;
-		
-	if(HA && HB && !HC)
-		if(reverse)
-			return 4;
-		else
-			return 2;
-		
-	if(HA && HB && HC)
-		if(reverse)
-			return 5;
-		else
-			return 3;
-		
-	if(!HA && HB && HC)
-		if(reverse)
-			return 6;
-		else
-			return 4;
-		
-	if(!HA && !HB && HC)
-		if(reverse)
-			return 1;
-		else
-			return 5;
+		{
+			if(HC)
+			{
+				if(reverse)
+					return 1;
+				else
+					return 5;			
+			}
+			else
+			{
+				if(reverse)
+					return 2;
+				else
+					return 6;	
+			}
+		}
+	}
 	return 0;
 }
 
-void UpdateBLDCInverter(unsigned char eleccycle)
+void UpdateBLDCInverter(unsigned char eleccycle)  using 1
 {
 	EA = 0;
 	switch(eleccycle)
@@ -215,7 +243,7 @@ void UpdateBLDCInverter(unsigned char eleccycle)
 	EA = 1;
 }	
 
-void BLDCTimerEventHandler()
+void BLDCTimerEventHandler()  using 1
 {	
 	UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse));
 }

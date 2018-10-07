@@ -9,12 +9,11 @@ bit SVPReverseSpin = 1;
 
 const ElecAngleOffestCCW = 267;
 const StableCount = 4;
-const ElecAngleOffestCW = 318;
-unsigned char SpeedRippleLimitforSVP = 4;
+const ElecAngleOffestCW = 335;
+unsigned char SpeedRippleLimitforSVP = 3;
 unsigned int SpeedLowLimitforSVP = 2400;
 unsigned int SatiSCyclesSwSVP = 0;
 unsigned char Stablecnt = 0;
-
 unsigned int SpeedCount = 0;
 unsigned char PrevoiusMechinalCycle = 0;
 unsigned long CalcElectricAngle = 0;
@@ -22,7 +21,7 @@ unsigned char SVPWMCurPWM = 0;
 unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 
 unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
-sbit debug = P1^6;
+sbit debug1 = P0^2;
 
 #define FOSC            30000000UL
 #define BRT             (65536 - FOSC / 115200 / 4)
@@ -80,25 +79,25 @@ void delay(unsigned long t)
 }
 
 
-void TM1_Isr() interrupt 3
+void TM1_Isr() interrupt 3 using 1
 {
 	unsigned char CurrentMechinalCycle;		
 	unsigned int EstimateSpeedCountByHall = 0;
 	
 	TR1 = 0;
 	TF1 = 0;
-	TH1 = 0xb8;
-	TL1 = 0x24;
+	TH1 = 0xc4;
+	TL1 = 0x00;
 	ET1 = 0;
 	TR1 = 1;
+		
+//	debug1 = 0;
 
-	
 	if(SpeedCount < 60000) SpeedCount++;
 	if(SpeedCount >= Previous1MechanicalDelay + (Previous1MechanicalDelay >> SpeedRippleLimitforSVP))
 	{
 		if(SVPWMmode)
 		{
-			debug = 1;
 			SVPWMmode = 0;
 			Stablecnt = 0;
 		}
@@ -115,7 +114,6 @@ void TM1_Isr() interrupt 3
 					SpeedCount = 0;	
 					if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
 					{
-						debug = 0;
 						if(Stablecnt >= 4)
 						{
 							SVPWMmode = 1;
@@ -125,7 +123,6 @@ void TM1_Isr() interrupt 3
 					}
 					else
 					{
-						debug = 1;
 						Stablecnt = 0;
 						SVPWMmode = 0;
 					}
@@ -154,7 +151,6 @@ void TM1_Isr() interrupt 3
 					SpeedCount = 0;	
 					if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
 					{		
-						debug = 0;
 						if(Stablecnt >= 4)
 						{
 							SVPWMmode = 1;
@@ -164,7 +160,6 @@ void TM1_Isr() interrupt 3
 					}
 					else
 					{
-						debug = 1;
 						SVPWMmode = 0;
 						Stablecnt = 0;
 					}
@@ -223,6 +218,7 @@ void TM1_Isr() interrupt 3
 	}
 	PreviousElectricAngle = CalcElectricAngle;
 	ET1 = 1;
+//	debug1 = 1;
 }
 
 void UART_Write_Int_Value(unsigned int num)
@@ -248,7 +244,7 @@ void PWM_Interrupu_Init()
 	EIE |= 0X08;
 }
 
-void PWM_Interr_ISR() interrupt 13
+void PWM_Interr_ISR() interrupt 13 using 2
 {
 	UpdateHall();
 }
@@ -256,10 +252,16 @@ void PWM_Interr_ISR() interrupt 13
 void SetMotorSpin(unsigned char pwm, bit dir)
 {
 	unsigned int blpwm;
-	blpwm = (int)pwm * 17 / 22;
+	blpwm = pwm;
 	SetBLDCDirPWM(blpwm,dir);
 	SVPWMCurPWM = pwm;
 	SVPReverseSpin = dir;
+}
+
+void ADCInit()
+{
+	ADCCON0 = 0X04;
+	ADCCON1 = 0X07;
 }
 
 void main(void)
@@ -268,13 +270,17 @@ void main(void)
 //	UartInit();
 //  ES = 1;
 //  EA = 1;
-	P1M1 &= 0xbf;
-	P1M2 |= 0x40;
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
+//	ADCInit();
 	TimerInit();
-	SetMotorSpin(60,1);
+	SetMotorSpin(255,1);
 	PWM_Interrupu_Init();
+	
+	P0M1 &= 0xfb;
+	P0M2 |= 0x04;
+	debug1 = 1;
+	
 //  UartSendStr("DAS02418");
 	while(1)
 	{

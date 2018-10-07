@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -19,338 +19,344 @@ line level    source
    9          
   10          const ElecAngleOffestCCW = 267;
   11          const StableCount = 4;
-  12          const ElecAngleOffestCW = 318;
-  13          unsigned char SpeedRippleLimitforSVP = 4;
+  12          const ElecAngleOffestCW = 335;
+  13          unsigned char SpeedRippleLimitforSVP = 3;
   14          unsigned int SpeedLowLimitforSVP = 2400;
   15          unsigned int SatiSCyclesSwSVP = 0;
   16          unsigned char Stablecnt = 0;
-  17          
-  18          unsigned int SpeedCount = 0;
-  19          unsigned char PrevoiusMechinalCycle = 0;
-  20          unsigned long CalcElectricAngle = 0;
-  21          unsigned char SVPWMCurPWM = 0;
-  22          unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAng
+  17          unsigned int SpeedCount = 0;
+  18          unsigned char PrevoiusMechinalCycle = 0;
+  19          unsigned long CalcElectricAngle = 0;
+  20          unsigned char SVPWMCurPWM = 0;
+  21          unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAng
              -le;
-  23          
-  24          unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',}; 
-  25          sbit debug = P1^6;
-  26          
-  27          #define FOSC            30000000UL
-  28          #define BRT             (65536 - FOSC / 115200 / 4)
-  29          
-  30          bit busy;
-  31          char wptr;
-  32          char rptr;
-  33          char buffer[16];
-  34          
-  35          void UartIsr() interrupt 4 using 1
-  36          {
-  37   1          if (TI)
-  38   1          {
-  39   2              TI = 0;
-  40   2              busy = 0;
-  41   2          }
-  42   1          if (RI)
-  43   1          {
-  44   2              RI = 0;
-  45   2              buffer[wptr++] = SBUF;
-  46   2              wptr &= 0x0f;
-  47   2          }
-  48   1      }
-  49          
-  50          void UartInit()
-  51          {
-  52   1       /*   SCON = 0x50;
-  53   1          T2L = BRT;
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 2   
+  22          
+  23          unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',}; 
+  24          sbit debug1 = P0^2;
+  25          
+  26          #define FOSC            30000000UL
+  27          #define BRT             (65536 - FOSC / 115200 / 4)
+  28          
+  29          bit busy;
+  30          char wptr;
+  31          char rptr;
+  32          char buffer[16];
+  33          
+  34          void UartIsr() interrupt 4 using 1
+  35          {
+  36   1          if (TI)
+  37   1          {
+  38   2              TI = 0;
+  39   2              busy = 0;
+  40   2          }
+  41   1          if (RI)
+  42   1          {
+  43   2              RI = 0;
+  44   2              buffer[wptr++] = SBUF;
+  45   2              wptr &= 0x0f;
+  46   2          }
+  47   1      }
+  48          
+  49          void UartInit()
+  50          {
+  51   1       /*   SCON = 0x50;
+  52   1          T2L = BRT;
+  53   1          T2H = BRT >> 8;
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 2   
 
-  54   1          T2H = BRT >> 8;
-  55   1          AUXR = 0x15;
-  56   1          wptr = 0x00;
-  57   1          rptr = 0x00;
-  58   1          busy = 0;*/
-  59   1      }
-  60          
-  61          void UartSend(char dat)
-  62          {
-  63   1          while (busy);
-  64   1          busy = 1;
-  65   1          SBUF = dat;
-  66   1      }
-  67          
-  68          void UartSendStr(char *p)
-  69          {
-  70   1          while (*p)
-  71   1          {
-  72   2              UartSend(*p++);
-  73   2          }
-  74   1      }
+  54   1          AUXR = 0x15;
+  55   1          wptr = 0x00;
+  56   1          rptr = 0x00;
+  57   1          busy = 0;*/
+  58   1      }
+  59          
+  60          void UartSend(char dat)
+  61          {
+  62   1          while (busy);
+  63   1          busy = 1;
+  64   1          SBUF = dat;
+  65   1      }
+  66          
+  67          void UartSendStr(char *p)
+  68          {
+  69   1          while (*p)
+  70   1          {
+  71   2              UartSend(*p++);
+  72   2          }
+  73   1      }
+  74          
   75          
-  76          
-  77          void delay(unsigned long t)
-  78          {
-  79   1        while(t--);
-  80   1      }
+  76          void delay(unsigned long t)
+  77          {
+  78   1        while(t--);
+  79   1      }
+  80          
   81          
-  82          
-  83          void TM1_Isr() interrupt 3
-  84          {
-  85   1        unsigned char CurrentMechinalCycle;   
-  86   1        unsigned int EstimateSpeedCountByHall = 0;
-  87   1        
-  88   1        TR1 = 0;
-  89   1        TF1 = 0;
-  90   1        TH1 = 0xb8;
-  91   1        TL1 = 0x24;
-  92   1        ET1 = 0;
-  93   1        TR1 = 1;
-  94   1      
-  95   1        
+  82          void TM1_Isr() interrupt 3 using 1
+  83          {
+  84   1        unsigned char CurrentMechinalCycle;   
+  85   1        unsigned int EstimateSpeedCountByHall = 0;
+  86   1        
+  87   1        TR1 = 0;
+  88   1        TF1 = 0;
+  89   1        TH1 = 0xc4;
+  90   1        TL1 = 0x00;
+  91   1        ET1 = 0;
+  92   1        TR1 = 1;
+  93   1          
+  94   1      //  debug1 = 0;
+  95   1      
   96   1        if(SpeedCount < 60000) SpeedCount++;
   97   1        if(SpeedCount >= Previous1MechanicalDelay + (Previous1MechanicalDelay >> SpeedRippleLimitforSVP))
   98   1        {
   99   2          if(SVPWMmode)
  100   2          {
- 101   3            debug = 1;
- 102   3            SVPWMmode = 0;
- 103   3            Stablecnt = 0;
- 104   3          }
- 105   2        }
- 106   1        CurrentMechinalCycle = DetermineCurrentElecCycle(0);
- 107   1        if(PrevoiusMechinalCycle != CurrentMechinalCycle)
- 108   1        {
- 109   2          if(SVPReverseSpin)
- 110   2            switch(CurrentMechinalCycle)
- 111   2            {
- 112   3              case 6:
- 113   3                Previous2MechanicalDelay = Previous1MechanicalDelay;
- 114   3                Previous1MechanicalDelay = SpeedCount;
- 115   3                SpeedCount = 0; 
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 3   
+ 101   3            SVPWMmode = 0;
+ 102   3            Stablecnt = 0;
+ 103   3          }
+ 104   2        }
+ 105   1        CurrentMechinalCycle = DetermineCurrentElecCycle(0);
+ 106   1        if(PrevoiusMechinalCycle != CurrentMechinalCycle)
+ 107   1        {
+ 108   2          if(SVPReverseSpin)
+ 109   2            switch(CurrentMechinalCycle)
+ 110   2            {
+ 111   3              case 6:
+ 112   3                Previous2MechanicalDelay = Previous1MechanicalDelay;
+ 113   3                Previous1MechanicalDelay = SpeedCount;
+ 114   3                SpeedCount = 0; 
+ 115   3                if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2Mechan
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 3   
 
- 116   3                if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2Mechan
              -icalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDel
              -ay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
- 117   3                {
- 118   4                  debug = 0;
- 119   4                  if(Stablecnt >= 4)
- 120   4                  {
- 121   5                    SVPWMmode = 1;
- 122   5                  }
- 123   4                  else
- 124   4                    Stablecnt += 1;
- 125   4                }
- 126   3                else
- 127   3                {
- 128   4                  debug = 1;
- 129   4                  Stablecnt = 0;
- 130   4                  SVPWMmode = 0;
- 131   4                }
+ 116   3                {
+ 117   4                  if(Stablecnt >= 4)
+ 118   4                  {
+ 119   5                    SVPWMmode = 1;
+ 120   5                  }
+ 121   4                  else
+ 122   4                    Stablecnt += 1;
+ 123   4                }
+ 124   3                else
+ 125   3                {
+ 126   4                  Stablecnt = 0;
+ 127   4                  SVPWMmode = 0;
+ 128   4                }
+ 129   3                break;
+ 130   3              case 5:
+ 131   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;    
  132   3                break;
- 133   3              case 5:
- 134   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;    
+ 133   3              case 4:
+ 134   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;    
  135   3                break;
- 136   3              case 4:
- 137   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;    
+ 136   3              case 3:
+ 137   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;     
  138   3                break;
- 139   3              case 3:
- 140   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;     
+ 139   3              case 2:
+ 140   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;    
  141   3                break;
- 142   3              case 2:
- 143   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;    
+ 142   3              case 1:
+ 143   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;    
  144   3                break;
- 145   3              case 1:
- 146   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;    
- 147   3                break;
- 148   3            }
- 149   2          else switch(CurrentMechinalCycle)
- 150   2            {
- 151   3              case 1:
- 152   3                Previous2MechanicalDelay = Previous1MechanicalDelay;
- 153   3                Previous1MechanicalDelay = SpeedCount;
- 154   3                SpeedCount = 0; 
- 155   3                if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2Mechan
+ 145   3            }
+ 146   2          else switch(CurrentMechinalCycle)
+ 147   2            {
+ 148   3              case 1:
+ 149   3                Previous2MechanicalDelay = Previous1MechanicalDelay;
+ 150   3                Previous1MechanicalDelay = SpeedCount;
+ 151   3                SpeedCount = 0; 
+ 152   3                if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2Mechan
              -icalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDel
              -ay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
- 156   3                {   
- 157   4                  debug = 0;
- 158   4                  if(Stablecnt >= 4)
- 159   4                  {
- 160   5                    SVPWMmode = 1;
- 161   5                  }
- 162   4                  else
- 163   4                  Stablecnt += 1;
- 164   4                }
- 165   3                else
- 166   3                {
- 167   4                  debug = 1;
- 168   4                  SVPWMmode = 0;
- 169   4                  Stablecnt = 0;
- 170   4                }
- 171   3                break;
- 172   3              case 2:
- 173   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;        
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 4   
+ 153   3                {   
+ 154   4                  if(Stablecnt >= 4)
+ 155   4                  {
+ 156   5                    SVPWMmode = 1;
+ 157   5                  }
+ 158   4                  else
+ 159   4                  Stablecnt += 1;
+ 160   4                }
+ 161   3                else
+ 162   3                {
+ 163   4                  SVPWMmode = 0;
+ 164   4                  Stablecnt = 0;
+ 165   4                }
+ 166   3                break;
+ 167   3              case 2:
+ 168   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 1 / 6;        
+ 169   3                break;
+ 170   3              case 3:
+ 171   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;    
+ 172   3                break;
+ 173   3              case 4:
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 4   
 
- 174   3                break;
- 175   3              case 3:
- 176   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 2 / 6;    
- 177   3                break;
- 178   3              case 4:
- 179   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;     
- 180   3                break;
- 181   3              case 5:
- 182   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;    
- 183   3                break;
- 184   3              case 6:
- 185   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;    
- 186   3                break;
- 187   3            }
- 188   2          }
- 189   1        if(SpeedCount != 0)
- 190   1        {
- 191   2          if(EstimateSpeedCountByHall > SpeedCount)
+ 174   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 3 / 6;     
+ 175   3                break;
+ 176   3              case 5:
+ 177   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 4 / 6;    
+ 178   3                break;
+ 179   3              case 6:
+ 180   3                EstimateSpeedCountByHall = Previous1MechanicalDelay * 5 / 6;    
+ 181   3                break;
+ 182   3            }
+ 183   2          }
+ 184   1        if(SpeedCount != 0)
+ 185   1        {
+ 186   2          if(EstimateSpeedCountByHall > SpeedCount)
+ 187   2          {
+ 188   3            if(EstimateSpeedCountByHall - SpeedCount > 15)
+ 189   3              SpeedCount = EstimateSpeedCountByHall;
+ 190   3          }
+ 191   2          else
  192   2          {
- 193   3            if(EstimateSpeedCountByHall - SpeedCount > 15)
+ 193   3            if(SpeedCount - SpeedCount > 15)
  194   3              SpeedCount = EstimateSpeedCountByHall;
  195   3          }
- 196   2          else
- 197   2          {
- 198   3            if(SpeedCount - SpeedCount > 15)
- 199   3              SpeedCount = EstimateSpeedCountByHall;
- 200   3          }
- 201   2        }
- 202   1        PrevoiusMechinalCycle = CurrentMechinalCycle;
- 203   1        CalcElectricAngle = (unsigned long)SpeedCount * 719 / ((unsigned long)Previous1MechanicalDelay + (unsigne
+ 196   2        }
+ 197   1        PrevoiusMechinalCycle = CurrentMechinalCycle;
+ 198   1        CalcElectricAngle = (unsigned long)SpeedCount * 719 / ((unsigned long)Previous1MechanicalDelay + (unsigne
              -d long)Previous2MechanicalDelay);
- 204   1        if(SVPWMmode)
- 205   1        {   
- 206   2            if(CalcElectricAngle <= 360)
- 207   2            {
- 208   3              //CalcElectricAngle = CalcElectricAngle % 360;
- 209   3            if(SVPReverseSpin)
- 210   3              CalcElectricAngle += ElecAngleOffestCW;
- 211   3            else
- 212   3              CalcElectricAngle += ElecAngleOffestCCW;
- 213   3            if(CalcElectricAngle >= 360) 
- 214   3              CalcElectricAngle -= 360;
- 215   3            if(SVPReverseSpin)
- 216   3              CalcElectricAngle = 360 - CalcElectricAngle;
- 217   3            CalculateInverterVectorsWidth_Polar(CalcElectricAngle, SVPWMCurPWM);
- 218   3          }
- 219   2        }
- 220   1        else
- 221   1        {
- 222   2          BLDCTimerEventHandler();
- 223   2        }
- 224   1        PreviousElectricAngle = CalcElectricAngle;
- 225   1        ET1 = 1;
- 226   1      }
- 227          
- 228          void UART_Write_Int_Value(unsigned int num)
- 229          {
- 230   1        UartSend(number[num%1000/100]);
- 231   1        UartSend(number[num%100/10]);
- 232   1        UartSend(number[num%10]);
- 233   1      }
- 234          
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 5   
+ 199   1        if(SVPWMmode)
+ 200   1        {   
+ 201   2            if(CalcElectricAngle <= 360)
+ 202   2            {
+ 203   3              //CalcElectricAngle = CalcElectricAngle % 360;
+ 204   3            if(SVPReverseSpin)
+ 205   3              CalcElectricAngle += ElecAngleOffestCW;
+ 206   3            else
+ 207   3              CalcElectricAngle += ElecAngleOffestCCW;
+ 208   3            if(CalcElectricAngle >= 360) 
+ 209   3              CalcElectricAngle -= 360;
+ 210   3            if(SVPReverseSpin)
+ 211   3              CalcElectricAngle = 360 - CalcElectricAngle;
+ 212   3            CalculateInverterVectorsWidth_Polar(CalcElectricAngle, SVPWMCurPWM);
+ 213   3          }
+ 214   2        }
+ 215   1        else
+ 216   1        {
+ 217   2          BLDCTimerEventHandler();
+ 218   2        }
+ 219   1        PreviousElectricAngle = CalcElectricAngle;
+ 220   1        ET1 = 1;
+ 221   1      //  debug1 = 1;
+ 222   1      }
+ 223          
+ 224          void UART_Write_Int_Value(unsigned int num)
+ 225          {
+ 226   1        UartSend(number[num%1000/100]);
+ 227   1        UartSend(number[num%100/10]);
+ 228   1        UartSend(number[num%10]);
+ 229   1      }
+ 230          
+ 231          void TimerInit()
+ 232          {
+ 233   1        CKCON |= 0X18;
+ 234   1        TMOD = 0x00;       
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 5   
 
- 235          void TimerInit()
- 236          {
- 237   1        CKCON |= 0X18;
- 238   1        TMOD = 0x00;       
- 239   1        TH1 = 0x70;
- 240   1        TL1 = 0x24;
- 241   1        TR1 = 1;      
- 242   1        ET1 = 1;
- 243   1        EA = 1;
- 244   1      }
- 245          
- 246          void PWM_Interrupu_Init()
- 247          {
- 248   1        EIE |= 0X08;
- 249   1      }
- 250          
- 251          void PWM_Interr_ISR() interrupt 13
- 252          {
- 253   1        UpdateHall();
- 254   1      }
- 255          
- 256          void SetMotorSpin(unsigned char pwm, bit dir)
- 257          {
- 258   1        unsigned int blpwm;
- 259   1        blpwm = (int)pwm * 17 / 22;
- 260   1        SetBLDCDirPWM(blpwm,dir);
- 261   1        SVPWMCurPWM = pwm;
- 262   1        SVPReverseSpin = dir;
- 263   1      }
- 264          
- 265          void main(void)
- 266          {
- 267   1        unsigned int i;
- 268   1      //  UartInit();
- 269   1      //  ES = 1;
- 270   1      //  EA = 1;
- 271   1        P1M1 &= 0xbf;
- 272   1        P1M2 |= 0x40;
+ 235   1        TH1 = 0x70;
+ 236   1        TL1 = 0x24;
+ 237   1        TR1 = 1;      
+ 238   1        ET1 = 1;
+ 239   1        EA = 1;
+ 240   1      }
+ 241          
+ 242          void PWM_Interrupu_Init()
+ 243          {
+ 244   1        EIE |= 0X08;
+ 245   1      }
+ 246          
+ 247          void PWM_Interr_ISR() interrupt 13 using 2
+ 248          {
+ 249   1        UpdateHall();
+ 250   1      }
+ 251          
+ 252          void SetMotorSpin(unsigned char pwm, bit dir)
+ 253          {
+ 254   1        unsigned int blpwm;
+ 255   1        blpwm = pwm;
+ 256   1        SetBLDCDirPWM(blpwm,dir);
+ 257   1        SVPWMCurPWM = pwm;
+ 258   1        SVPReverseSpin = dir;
+ 259   1      }
+ 260          
+ 261          void ADCInit()
+ 262          {
+ 263   1        ADCCON0 = 0X04;
+ 264   1        ADCCON1 = 0X07;
+ 265   1      }
+ 266          
+ 267          void main(void)
+ 268          {
+ 269   1        unsigned int i;
+ 270   1      //  UartInit();
+ 271   1      //  ES = 1;
+ 272   1      //  EA = 1;
  273   1        Inverter_ControlGPIO_Init();
  274   1        HallGpioInit();
- 275   1        TimerInit();
- 276   1        SetMotorSpin(60,1);
- 277   1        PWM_Interrupu_Init();
- 278   1      //  UartSendStr("DAS02418");
- 279   1        while(1)
- 280   1        {
- 281   2          for(i = 0;i <= 360;i ++)
- 282   2          { 
- 283   3            
- 284   3        //  BLDCTimerEventHandler();
- 285   3        //    UpdateBLDCInverter(i);
- 286   3            delay(362);
- 287   3      
- 288   3          //  CalculateInverterVectorsWidth_Polar(i, 12);
- 289   3      /*      UART_Write_Int_Value(CalcElectricAngle);
- 290   3            if(HA)
- 291   3              UartSendStr("HA+");
- 292   3            else  
- 293   3              UartSendStr("HA-");
- 294   3            
- 295   3            if(HB)
- 296   3              UartSendStr("HB+");
-C51 COMPILER V9.59.0.0   MAIN                                                              10/04/2018 12:35:41 PAGE 6   
+ 275   1      //  ADCInit();
+ 276   1        TimerInit();
+ 277   1        SetMotorSpin(255,1);
+ 278   1        PWM_Interrupu_Init();
+ 279   1        
+ 280   1        P0M1 &= 0xfb;
+ 281   1        P0M2 |= 0x04;
+ 282   1        debug1 = 1;
+ 283   1        
+ 284   1      //  UartSendStr("DAS02418");
+ 285   1        while(1)
+ 286   1        {
+ 287   2          for(i = 0;i <= 360;i ++)
+ 288   2          { 
+ 289   3            
+ 290   3        //  BLDCTimerEventHandler();
+ 291   3        //    UpdateBLDCInverter(i);
+ 292   3            delay(362);
+ 293   3      
+ 294   3          //  CalculateInverterVectorsWidth_Polar(i, 12);
+ 295   3      /*      UART_Write_Int_Value(CalcElectricAngle);
+ 296   3            if(HA)
+C51 COMPILER V9.59.0.0   MAIN                                                              10/07/2018 12:06:16 PAGE 6   
 
- 297   3            else  
- 298   3              UartSendStr("HB-");
- 299   3            
- 300   3            if(HC)
- 301   3              UartSendStr("HC+");
- 302   3            else  
- 303   3              UartSendStr("HC-");
- 304   3            switch(DetermineCurrentElecCycle(0))
- 305   3            {
- 306   3              case 0:
- 307   3                UartSendStr("HALL ERROR\r\n"); break;
- 308   3              case 1:
- 309   3                UartSendStr("HALL 1\r\n");break;
- 310   3              case 2:
- 311   3                UartSendStr("HALL 2\r\n");break;
- 312   3              case 3:
- 313   3                UartSendStr("HALL 3\r\n");break;
- 314   3              case 4:
- 315   3                UartSendStr("HALL 4\r\n");break;
- 316   3              case 5:
- 317   3                UartSendStr("HALL 5\r\n");break;
- 318   3              case 6:
- 319   3                UartSendStr("HALL 6\r\n");break;
- 320   3            }*/
- 321   3          }
- 322   2        }
- 323   1      }
+ 297   3              UartSendStr("HA+");
+ 298   3            else  
+ 299   3              UartSendStr("HA-");
+ 300   3            
+ 301   3            if(HB)
+ 302   3              UartSendStr("HB+");
+ 303   3            else  
+ 304   3              UartSendStr("HB-");
+ 305   3            
+ 306   3            if(HC)
+ 307   3              UartSendStr("HC+");
+ 308   3            else  
+ 309   3              UartSendStr("HC-");
+ 310   3            switch(DetermineCurrentElecCycle(0))
+ 311   3            {
+ 312   3              case 0:
+ 313   3                UartSendStr("HALL ERROR\r\n"); break;
+ 314   3              case 1:
+ 315   3                UartSendStr("HALL 1\r\n");break;
+ 316   3              case 2:
+ 317   3                UartSendStr("HALL 2\r\n");break;
+ 318   3              case 3:
+ 319   3                UartSendStr("HALL 3\r\n");break;
+ 320   3              case 4:
+ 321   3                UartSendStr("HALL 4\r\n");break;
+ 322   3              case 5:
+ 323   3                UartSendStr("HALL 5\r\n");break;
+ 324   3              case 6:
+ 325   3                UartSendStr("HALL 6\r\n");break;
+ 326   3            }*/
+ 327   3          }
+ 328   2        }
+ 329   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1192    ----
+   CODE SIZE        =   1110    ----
    CONSTANT SIZE    =     10    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
