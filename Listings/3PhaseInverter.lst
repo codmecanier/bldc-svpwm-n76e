@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    10/07/2018 12:06:17 PAGE 1   
+C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    12/23/2018 18:22:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE 3PHASEINVERTER
@@ -28,11 +28,11 @@ line level    source
   18   1        P01 = 1;
   19   1        P03 = 1;*/
   20   1        PIOCON0 = 0X3F;
-  21   1        PWMCON1 = 0X51;
+  21   1        PWMCON1 = 0X50;
   22   1        PMEN = 0X3f;
   23   1        PMD = 0x00;
   24   1        PNP = 0X00;
-  25   1        FBD = 0X3F;
+  25   1        FBD = 0X00;
   26   1        PWMPL = 0Xff;
   27   1        PWMPH = 0X00;
   28   1        PWM2L = 0X00;
@@ -60,9 +60,9 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     91    ----
+   CODE SIZE        =     90    ----
    CONSTANT SIZE    =   ----    ----
-C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    10/07/2018 12:06:17 PAGE 2   
+C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    12/23/2018 18:22:00 PAGE 2   
 
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

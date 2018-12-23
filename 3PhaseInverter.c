@@ -18,11 +18,11 @@ void Inverter_ControlGPIO_Init()
 	P01 = 1;
 	P03 = 1;*/
 	PIOCON0 = 0X3F;
-	PWMCON1 = 0X51;
+	PWMCON1 = 0X50;
 	PMEN = 0X3f;
 	PMD = 0x00;
 	PNP = 0X00;
-	FBD = 0X3F;
+	FBD = 0X00;
 	PWMPL = 0Xff;
 	PWMPH = 0X00;
 	PWM2L = 0X00;

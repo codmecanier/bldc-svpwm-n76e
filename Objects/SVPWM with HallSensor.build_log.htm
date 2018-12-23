@@ -21,13 +21,14 @@ Target DLL:      Nuvoton_8051_Keil_uVision_Driver.dll V1.09
 Dialog DLL:      TP51.DLL V2.60.0.0
  
 <h2>Project:</h2>
-E:\无刷电机驱动器\58mm风扇电机 SVPWM 24V 张老板\BACKUP 2018年10月7日09点33分 运行OK高速噪音大改版前\Program\N76E\SVPWM with HallSensor.uvproj
+E:\无刷电机驱动器\58mm风扇电机 SVPWM 24V 张老板\Program\N76E\SVPWM with HallSensor.uvproj
 Project File Date:  09/30/2018
 
 <h2>Output:</h2>
 Rebuild target 'Target 1'
 assembling STARTUP.A51...
 compiling SVPWM.c...
+SVPWM.c(240): warning C235: parameter 1: different types
 compiling main.c...
 compiling BLDC with Hall.c...
 compiling 3PhaseInverter.c...
@@ -39,10 +40,12 @@ linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_UART_WRITE_INT_VALUE?MAIN
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?ADCINIT?MAIN
-Program Size: data=94.6 xdata=0 code=4319
+    SEGMENT: ?PR?PWM_INTERRUPU_INIT?MAIN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?UPDATEHALL?BLDC_WITH_HALL
+Program Size: data=96.6 xdata=512 code=3126
 creating hex file from ".\Objects\SVPWM with HallSensor"...
-".\Objects\SVPWM with HallSensor" - 0 Error(s), 4 Warning(s).
+".\Objects\SVPWM with HallSensor" - 0 Error(s), 6 Warning(s).
 Build Time Elapsed:  00:00:01
 </pre>
 </body>

@@ -13,7 +13,7 @@ void SetBLDCDirPWM(unsigned char pwm, bit dir)
 	BLDCSpeed = pwm;
 }
 
-void UpdateHall()
+void UpdateHall() using 2
 {	
 	HA = HAPort;
 	HB = HBPort;
@@ -82,11 +82,11 @@ unsigned char DetermineCurrentElecCycle(bit reverse)
 
 unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 {	
-	if(HA)
+	if(HAPort)
 	{
-		if(HB)
+		if(HBPort)
 		{
-			if(HC)
+			if(HCPort)
 			{
 				if(reverse)
 					return 5;
@@ -103,7 +103,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 		}
 		else
 		{
-			if(HC)
+			if(HCPort)
 			{
 			}
 			else
@@ -117,9 +117,9 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 	}
 	else
 	{
-		if(HB)
+		if(HBPort)
 		{
-			if(HC)
+			if(HCPort)
 			{
 				if(reverse)
 					return 6;
@@ -129,7 +129,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 		}
 		else
 		{
-			if(HC)
+			if(HCPort)
 			{
 				if(reverse)
 					return 1;
@@ -148,7 +148,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 	return 0;
 }
 
-void UpdateBLDCInverter(unsigned char eleccycle)  using 1
+void UpdateBLDCInverter(unsigned char eleccycle) using 1
 {
 	EA = 0;
 	switch(eleccycle)
@@ -243,7 +243,7 @@ void UpdateBLDCInverter(unsigned char eleccycle)  using 1
 	EA = 1;
 }	
 
-void BLDCTimerEventHandler()  using 1
+void BLDCTimerEventHandler() using 1
 {	
 	UpdateBLDCInverter(DetermineCurrentElecCycle(BLDCReverse));
 }
