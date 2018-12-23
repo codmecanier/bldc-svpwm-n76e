@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:22:00 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:24:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_WITH_HALL
@@ -62,7 +62,7 @@ line level    source
   52                return 5;
   53              else
   54                return 2;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:22:00 PAGE 2   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:24:00 PAGE 2   
 
   55              
   56            if(HA && HB && !HC)
@@ -126,7 +126,7 @@ line level    source
  114   4                return 1;
  115   4            }
  116   3          }
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:22:00 PAGE 3   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:24:00 PAGE 3   
 
  117   2        }
  118   1        else
@@ -190,7 +190,7 @@ line level    source
  176   3            PWM4L = 0;
  177   3            PWMINTC=0X10;
  178   3            TA = 0X0AA;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:22:00 PAGE 4   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:24:00 PAGE 4   
 
  179   3            TA = 0X55;
  180   3            SFRS = 0;
@@ -254,7 +254,7 @@ line level    source
  238   3            break;
  239   3          }
  240   2          case 0:
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:22:00 PAGE 5   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/23/2018 18:24:00 PAGE 5   
 
  241   2            break;
  242   2        }

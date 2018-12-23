@@ -12,8 +12,8 @@ const StableCount = 4;
 const ElecAngleOffestCW = 219; // 238wm // 222
 unsigned char SVPAngleStep = 1;
 unsigned char SVPNextAngleStep = 1;
-unsigned char SpeedRippleLimitforSVP = 1;
-unsigned int SpeedLowLimitforSVP = 24000;
+unsigned char SpeedRippleLimitforSVP = 2;
+unsigned int SpeedLowLimitforSVP = 2400;
 unsigned int SatiSCyclesSwSVP = 0;
 unsigned char Stablecnt = 0;
 unsigned int SpeedCount = 0;
@@ -80,7 +80,7 @@ void delay(unsigned long t)
 {
 	while(t--);
 }
-/*
+
 
 void TM1_Isr() interrupt 3 using 1
 {
@@ -210,14 +210,15 @@ void TM1_Isr() interrupt 3 using 1
 			if(SVPReverseSpin)
 				CalcElectricAngle = 255 - CalcElectricAngle;
 			CalculateInverterVectorsWidth_Polar(CalcElectricAngle);*/
-//	}
-//	else
-//	{
+	}
+	else
+	{
 	//	BLDCTimerEventHandler();
-//	}
-//	ET1 = 1;
+	}
+	ET1 = 1;
 //	debug1 = 1;
-//}
+}
+
 
 
 void UART_Write_Int_Value(unsigned int num)
@@ -329,44 +330,14 @@ void UpdateSVPFreq(unsigned char th, unsigned char tl) using 3
 
 void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 {
-	unsigned int CapturePeriod = 0;
+	unsigned int CapturePeriod;
 	CAPCON0 &= 0XFE;
 	if(SVPReverseSpin)
 		SVPDriveAngle = ElecAngleOffestCW;
 	else
 		SVPDriveAngle = ElecAngleOffestCCW;
 	UpdateSVPFreq(255-C0H,255-C0L);	
-	Previous1MechanicalDelay = C0H << 8 + C0L;
-	switch(T2MOD)
-	{
-		case 0x69: break;
-		case 0x59: Previous1MechanicalDelay <<= 1; break;
-		case 0x49: Previous1MechanicalDelay <<= 2; break;
-	}
-	Previous2MechanicalDelay = Previous1MechanicalDelay;	
 	SetSpeedRange_SVPrecision();
-	if(Previous1MechanicalDelay >= Previous1MechanicalDelay + (Previous1MechanicalDelay >> SpeedRippleLimitforSVP))
-	{
-		if(SVPWMmode)
-		{
-		//	SVPWMmode = 0;
-		//	Stablecnt = 0;
-		}
-	}
-	if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
-	{
-		if(Stablecnt >= 4)
-		{
-//			SVPWMmode = 1;
-		}
-		else
-			Stablecnt += 1;
-	}
-	else
-	{
-		Stablecnt = 0;
-//		SVPWMmode = 0;
-	}
 }
 
 void Timer3_Interr_ISR() interrupt 16 using 1
