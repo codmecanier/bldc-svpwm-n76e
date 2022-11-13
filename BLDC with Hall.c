@@ -22,15 +22,12 @@ void UpdateHall() using 2
 
 void HallGpioInit()
 {
-	P0M1 &= 0XE7;
-	P0M2 &= 0XE7;
-	P1M1 &= 0XEB;
-	P1M2 &= 0XEB;	
+	P1M1 &= 0XC7;
+	P1M2 &= 0XC7;	
 	TA = 0X0AA;
 	TA = 0X55;
 	SFRS = 1;
 	P1S |= 0X18;
-	P0S |= 0X08;
 	TA = 0X0AA;
 	TA = 0X55;
 	SFRS = 0;

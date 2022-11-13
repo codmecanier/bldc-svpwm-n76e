@@ -3,4 +3,4 @@
 
 void CalculateInverterVectorsWidth_Polar(unsigned int deg);
 
-void SetSVPWMVaue(unsigned char length);
+void SetSVPWMValue(unsigned char length);

@@ -1,4 +1,4 @@
-#define HAPort P04
+#define HAPort P15
 #define HBPort P13 
 #define HCPort P14
 
