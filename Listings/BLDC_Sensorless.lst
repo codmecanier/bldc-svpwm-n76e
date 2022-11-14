@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 01:22:21 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 21:02:51 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_SENSORLESS
@@ -16,193 +16,104 @@ line level    source
    6          unsigned int DCBUS_Voltage = 0;
    7          
    8          unsigned int data Phase_UVW_Voltage_ADC_Value[3];
-   9            
-  10          unsigned char data PreviousBEMF_CH;
-  11          unsigned char data PrevoiusBEMF_Value;
-  12          unsigned char data BEMF_Slope_Count;
-  13          
-  14          void Set_Phase_U_Voltage_ADC_Value(unsigned int i) using 3
-  15          {
-  16   1        Phase_UVW_Voltage_ADC_Value[0] = i;
-  17   1      }
-  18          void Set_Phase_V_Voltage_ADC_Value(unsigned int i) using 3
-  19          {
-  20   1        Phase_UVW_Voltage_ADC_Value[1] = i;
-  21   1      }
-  22          void Set_Phase_W_Voltage_ADC_Value(unsigned int i) using 3
-  23          {
-  24   1        Phase_UVW_Voltage_ADC_Value[2] = i;
-  25   1      }
+   9          
+  10          const unsigned char BEMF_DCT_Params[6][3] = {
+  11            {0,2,0},
+  12            {0,1,1},
+  13            {1,0,0},
+  14            {1,2,1},
+  15            {2,1,0},
+  16            {2,0,1},
+  17          };
+  18          
+  19          #define DC_CH 0
+  20          #define BEMF_CH 1
+  21          #define SLOPE 2
+  22          
+  23          unsigned char data PreviousBEMF_CH;
+  24          unsigned char data PrevoiusBEMF_Value;
+  25          unsigned char data BEMF_Slope_Count;
   26          
-  27          void BEMF_ReadVoltage(unsigned char phase) using 3
+  27          void Set_Phase_U_Voltage_ADC_Value(unsigned int i) using 1
   28          {
-  29   1        ADCCON1 = 0X01;////
-  30   1        switch(phase)
-  31   1        {
-  32   2          case 1: 
-  33   2          {
-  34   3            ADCCON0 &= 0XF0;
-  35   3            ADCCON0 |= 0X03;
-  36   3            break;
-  37   3          }
-  38   2          case 2: 
-  39   2          {
-  40   3            ADCCON0 &= 0XF0;
-  41   3            ADCCON0 |= 0X04;
-  42   3            break;
-  43   3          }
-  44   2          case 3: 
-  45   2          {
-  46   3            ADCCON0 &= 0XF0;
-  47   3            ADCCON0 |= 0X05;
-  48   3            break;
-  49   3          }
-  50   2        }
-  51   1        ADCDLY = 0;
-  52   1        ADCCON2 = 0x00;
-  53   1        ADCCON0 |= 0X40;  //start adc
-  54   1      }
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 01:22:21 PAGE 2   
+  29   1        Phase_UVW_Voltage_ADC_Value[0] = i;
+  30   1      }
+  31          void Set_Phase_V_Voltage_ADC_Value(unsigned int i) using 1
+  32          {
+  33   1        Phase_UVW_Voltage_ADC_Value[1] = i;
+  34   1      }
+  35          void Set_Phase_W_Voltage_ADC_Value(unsigned int i) using 1
+  36          {
+  37   1        Phase_UVW_Voltage_ADC_Value[2] = i;
+  38   1      }
+  39          
+  40          void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times) using 1
+  41          {
+  42   1        ADCCON1 = 0X01;////
+  43   1        ADCCON0 &= 0XF0;
+  44   1        eleccycle -= 1;
+  45   1        if(times == 1)
+  46   1          ADCCON0 |= 0X03 + BEMF_DCT_Params[eleccycle][DC_CH];
+  47   1        else
+  48   1          ADCCON0 |= 0X03 + BEMF_DCT_Params[eleccycle][BEMF_CH];
+  49   1        ADCDLY = 0;
+  50   1        ADCCON2 = 0x00;
+  51   1        ADCCON0 |= 0X40;  //start adc
+  52   1      } 
+  53          
+  54          
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 21:02:51 PAGE 2   
 
-  55          
-  56          void Determine_BEMF_Detect_Channel(unsigned char eleccycle, unsigned char times) using 3
-  57          {
-  58   1        bit bemf_cmp = 0;
-  59   1        bit slope_increase = 0;
-  60   1        unsigned char i = 0;
-  61   1        unsigned char bemf_frc_idx = 0;
-  62   1        unsigned char bemf_frc_idxp = 0;
-  63   1        unsigned char bemf_channel;
-  64   1      
-  65   1        switch(eleccycle)
-  66   1        {
-  67   2          case 1: {   
-  68   3            switch(times)
-  69   3            {
-  70   4              case 1: BEMF_ReadVoltage(1); break;
-  71   4              case 2: BEMF_ReadVoltage(3); break;
-  72   4              case 3: 
-  73   4                bemf_channel = 2;
-  74   4                slope_increase = 0;
-  75   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[0];
-  76   4                break;
-  77   4            }
-  78   3              break;  //AB c decrease  
-  79   3          }
-  80   2          case 2: {
-  81   3            switch(times)
-  82   3            {
-  83   4              case 1: BEMF_ReadVoltage(1); break;
-  84   4              case 2: BEMF_ReadVoltage(2); break;
-  85   4              case 3: 
-  86   4                bemf_channel = 1;
-  87   4                slope_increase = 1;
-  88   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[0];
-  89   4                break;
-  90   4            }
-  91   3              break;  //AC b increase
-  92   3          }
-  93   2          case 3: {
-  94   3            switch(times)
-  95   3            {
-  96   4              case 1: BEMF_ReadVoltage(2); break;
-  97   4              case 2: BEMF_ReadVoltage(1); break;
-  98   4              case 3: 
-  99   4                bemf_channel = 0;
- 100   4                slope_increase = 0;
- 101   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[1];
- 102   4                break;
- 103   4            }
- 104   3              break;  //BC a decrease
- 105   3          }
- 106   2          case 4: { 
- 107   3            switch(times)
- 108   3            {
- 109   4              case 1: BEMF_ReadVoltage(2); break;
- 110   4              case 2: BEMF_ReadVoltage(3); break;
- 111   4              case 3: 
- 112   4                bemf_channel = 2;
- 113   4                slope_increase = 1;
- 114   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[1];
- 115   4                break;
- 116   4            }
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 01:22:21 PAGE 3   
-
- 117   3              break;  //BA c increase
- 118   3          }
- 119   2          case 5: {
- 120   3            switch(times)
- 121   3            {
- 122   4              case 1: BEMF_ReadVoltage(3); break;
- 123   4              case 2: BEMF_ReadVoltage(2); break;
- 124   4              case 3: 
- 125   4                bemf_channel = 1;
- 126   4                slope_increase = 0;
- 127   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[2];
- 128   4                break;
- 129   4            }
- 130   3              break;  //CA b decrease
- 131   3          }
- 132   2          case 6: {
- 133   3            switch(times)       
- 134   3            {
- 135   4              case 1: BEMF_ReadVoltage(3); break;
- 136   4              case 2: BEMF_ReadVoltage(1); break;
- 137   4              case 3: 
- 138   4                bemf_channel = 0;
- 139   4                slope_increase = 1;
- 140   4                DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[2];
- 141   4                break;
- 142   4            }
- 143   3              break;  //CB a increase
- 144   3          }
- 145   2          case 0:
- 146   2            break;
- 147   2        }
- 148   1        if(times == 3)
- 149   1        {
- 150   2          if(slope_increase)
- 151   2          {
- 152   3            bemf_cmp = Phase_UVW_Voltage_ADC_Value[bemf_channel] < (DCBUS_Voltage >> 1);
- 153   3      //      if(Phase_UVW_Voltage_ADC_Value[bemf_channel] < (DCBUS_Voltage >> MagDecayPulseDct))
- 154   3      //        BEMF_Slope_Count = 0;
- 155   3          }
- 156   2          else
- 157   2          {
- 158   3            bemf_cmp = Phase_UVW_Voltage_ADC_Value[bemf_channel] > (DCBUS_Voltage >> 1);  
- 159   3      //      if(Phase_UVW_Voltage_ADC_Value[bemf_channel] > (DCBUS_Voltage - (DCBUS_Voltage >> MagDecayPulseDct)))
- 160   3      //        BEMF_Slope_Count = 0;
- 161   3          }
- 162   2          if(!bemf_cmp && (BEMF_Slope_Count <= (MagDecayPulseCnt >> 1)))
- 163   2            BEMF_Slope_Count++;
- 164   2          if(bemf_cmp && (BEMF_Slope_Count >= (MagDecayPulseCnt >> 1)) && (BEMF_Slope_Count <= MagDecayPulseCnt))
- 165   2            BEMF_Slope_Count++;
- 166   2          if(PreviousBEMF_CH != bemf_channel)
- 167   2            BEMF_Slope_Count = 0;
- 168   2          PreviousBEMF_CH = bemf_channel;
- 169   2          PrevoiusBEMF_Value = Phase_UVW_Voltage_ADC_Value[bemf_channel];
- 170   2          P07 = (BEMF_Slope_Count >= MagDecayPulseCnt) && bemf_cmp;
- 171   2        }
- 172   1      } 
- 173          
- 174          void BEMF_Gpio_ADCIN_Init()
- 175          {
- 176   1        P0M1 |= 0x70;
- 177   1        P0M2 &= 0x8f;
- 178   1        AINDIDS  |= 0x3E;
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   02/23/2019 01:22:21 PAGE 4   
-
- 179   1      }
+  55          unsigned char BEMF_Calculate(unsigned char eleccycle) using 1
+  56          { 
+  57   1        bit bemf_cmp = 0;
+  58   1        eleccycle -= 1; 
+  59   1        DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][DC_CH]];
+  60   1        if(BEMF_DCT_Params[eleccycle][SLOPE])
+  61   1        {
+  62   2          bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> 1);
+  63   2          if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> MagDecayPulseDct
+             -))
+  64   2            BEMF_Slope_Count = 0;
+  65   2        }
+  66   1        else
+  67   1        {
+  68   2          bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage >> 1); 
+  69   2          if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage - (DCBUS_Voltage >>
+             - MagDecayPulseDct)))
+  70   2            BEMF_Slope_Count = 0;
+  71   2        }
+  72   1        if(!bemf_cmp && (BEMF_Slope_Count <= (MagDecayPulseCnt >> 1)))
+  73   1          BEMF_Slope_Count++;
+  74   1        if(bemf_cmp && (BEMF_Slope_Count >= (MagDecayPulseCnt >> 1)) && (BEMF_Slope_Count <= MagDecayPulseCnt))
+  75   1          BEMF_Slope_Count++;
+  76   1        if(PreviousBEMF_CH != BEMF_DCT_Params[eleccycle][BEMF_CH])
+  77   1          BEMF_Slope_Count = 0;
+  78   1        PreviousBEMF_CH = BEMF_DCT_Params[eleccycle][BEMF_CH];
+  79   1        PrevoiusBEMF_Value = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]];
+  80   1        if((BEMF_Slope_Count >= MagDecayPulseCnt) && bemf_cmp)
+  81   1        {
+  82   2          return 1;
+  83   2        }
+  84   1        return 0;
+  85   1      }
+  86          
+  87          void BEMF_Gpio_ADCIN_Init()
+  88          {
+  89   1        P0M1 |= 0x70;
+  90   1        P0M2 &= 0x8f;
+  91   1        AINDIDS  |= 0x3E;
+  92   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    438    ----
+   CODE SIZE        =    347    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     11       3
+   DATA SIZE        =     29    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----       2
+   BIT SIZE         =   ----       1
 END OF MODULE INFORMATION.
 
 

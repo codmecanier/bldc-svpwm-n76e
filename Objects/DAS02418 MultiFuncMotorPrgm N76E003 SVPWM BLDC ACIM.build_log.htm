@@ -30,8 +30,8 @@ compiling 3PhaseInverter.c...
 compiling BLDC with Hall.c...
 compiling BLDC_Sensorless.c...
 compiling main.c...
-main.c(415): warning C206: 'GetBLDCDirection': missing function-prototype
-main.c(425): warning C280: 'elecc': unreferenced local variable
+main.c(190): warning C206: 'GetBLDCDirection': missing function-prototype
+main.c(443): warning C280: 'elecc': unreferenced local variable
 compiling NTC.c...
 compiling SVPWM.c...
 SVPWM.c(240): warning C235: parameter 1: different types
@@ -41,10 +41,6 @@ linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?UARTINIT?MAIN
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_UARTSENDSTR?MAIN
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_UART_WRITE_INT_VALUE?MAIN
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?PWM_INTERRUPU_INIT?MAIN
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_GET_TEMPERATURE?NTC
@@ -52,9 +48,9 @@ linking...
     SEGMENT: ?PR?_ADC_CURRENTSHUNT_COMPARE_START?MAIN
     CALLER1: ?PR?ADC_INTERRUPT_ISR?MAIN
     CALLER2: ?C_C51STARTUP
-Program Size: data=110.5 xdata=544 code=5873
+Program Size: data=112.5 xdata=544 code=5561
 creating hex file from ".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM"...
-".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 10 Warning(s).
+".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 8 Warning(s).
 Build Time Elapsed:  00:00:01
 </pre>
 </body>

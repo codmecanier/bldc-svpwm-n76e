@@ -46,7 +46,7 @@ void HallGpioInit()
 	HCPort = 1;
 }
 
-unsigned char DetermineCurrentElecCycle(bit reverse) using 1
+unsigned char DetermineCurrentElecCycle(bit reverse) using 3
 {	
 	if(HAPort)
 	{
@@ -119,7 +119,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 	return 0;
 }
 
-void UpdateBLDCInverter(unsigned char eleccycle) using 1
+void UpdateBLDCInverter(unsigned char eleccycle) using 3
 {
 	if(BLDC_Previous_Cycle!= eleccycle)
 	{

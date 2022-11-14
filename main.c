@@ -9,6 +9,9 @@
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
+bit BLDC_SENSORLESS = 1;
+bit BEMF_PWM_ON_Detect = 1;
+unsigned char BLDC_SNSless_30degDLY = 0;
 unsigned char ElecAngleOffestCCW = 189;
 unsigned char StableCount = 10;
 unsigned char ElecAngleOffestCW = 215; // 238wm // 222
@@ -43,45 +46,42 @@ static bit ADC_IsSampleCurrentFinishd = 0;
 #define BEMF_SMPL       1
 #define NTC_ADC         2	
 #define EXTERNAL_ANALOG 5	
-#define CALCULATE_BEMF  6
 
 unsigned char data ADC_Sample_Sequence[]=
 {
 DC_VOLTAGE_SMPL ,
 BEMF_SMPL       ,
-CALCULATE_BEMF	,
 NTC_ADC         ,	
 DC_VOLTAGE_SMPL ,
 BEMF_SMPL       ,
-CALCULATE_BEMF	,
 EXTERNAL_ANALOG ,	
 };
 
-unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
+//unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
 sbit debug1 = P0^7;
 
-#define FOSC            30000000UL
-#define BRT             (65536 - FOSC / 115200 / 4)
+//#define FOSC            30000000UL
+//#define BRT             (65536 - FOSC / 115200 / 4)
 
-bit busy;
-char wptr;
-char rptr;
-char buffer[16];
+//bit busy;
+//char wptr;
+//char rptr;
+//char buffer[16];
 
-void UartIsr() interrupt 4 using 1
-{
-    if (TI)
-    {
-        TI = 0;
-        busy = 0;
-    }
-    if (RI)
-    {
-        RI = 0;
-        buffer[wptr++] = SBUF;
-        wptr &= 0x0f;
-    }
-}
+//void UartIsr() interrupt 4 using 1
+//{
+//    if (TI)
+//    {
+//        TI = 0;
+//        busy = 0;
+//    }
+//    if (RI)
+//    {
+//        RI = 0;
+//        buffer[wptr++] = SBUF;
+//        wptr &= 0x0f;
+//    }
+//}
 
 void UartInit()
 {
@@ -94,27 +94,27 @@ void UartInit()
     busy = 0;*/
 }
 
-void UartSend(char dat)
-{
-    while (busy);
-    busy = 1;
-    SBUF = dat;
-}
+//void UartSend(char dat)
+//{
+//    while (busy);
+//    busy = 1;
+//    SBUF = dat;
+//}
 
-void UartSendStr(char *p)
-{
-    while (*p)
-    {
-        UartSend(*p++);
-    }
-}
+//void UartSendStr(char *p)
+//{
+//    while (*p)
+//    {
+//        UartSend(*p++);
+//    }
+//}
 
-void UART_Write_Int_Value(unsigned int num)
-{
-	UartSend(number[num%1000/100]);
-	UartSend(number[num%100/10]);
-	UartSend(number[num%10]);
-}
+//void UART_Write_Int_Value(unsigned int num)
+//{
+//	UartSend(number[num%1000/100]);
+//	UartSend(number[num%100/10]);
+//	UartSend(number[num%10]);
+//}
 
 void TimerInit()
 {
@@ -129,22 +129,17 @@ void TimerInit()
 	RCMP2H = 0XFF;
 	RCMP2H = 0XFE;
 	
-	RL3 = 0X00;
-	RH3 = 0XF0;
+//	RL3 = 0X00;
+//	RH3 = 0XF0;
 	EIE1 |= 0X02;
-	T3CON &= 0XEF;
-	T3CON |= 0X08;
+//	T3CON &= 0XEF;
+//	T3CON |= 0X08;
 	
 	TH1 = 0x70;
 	TL1 = 0x24;
-	EIE |= 0X04;
+	EIE |= 0X04;		//input capture interrupt enable
 	
 	T2CON |= 0X04;
-	
-	EIPH |= 0X04;
-	EIP &= 0XFB;
-	EIP |= 0X80;
-	EIPH &= 0X7F;
 	
 	TMOD |= 0x01;	
 	TL0 = 0xAB;	
@@ -153,21 +148,22 @@ void TimerInit()
 	TR0 = 1;
 	ET0 = 1;
 	
-	PICON = 0XFD;
-	PINEN |= 0X58;
+	//Pin interrupts settings
+	PICON = 0XFD;				//P1 interrupts edge triggled
+	PINEN |= 0X78;
 	PIPEN |= 0X38;
 	
-	IP |= 0x40;
+	//IRQ Priority settings
+	IP |= 0x00;				//ADC priority second
 	IPH |= 0x40;
 	
-	EIE |= 0X02;
-	
-	EIPH |= 0X80;
 	EIP |= 0X80;
+	EIPH |= 0X80;			//PWM priority first
 	
-	EIP |= 0X26;
+	EIP1 |= 0x02;
+	EIPH1 |= 0x02;
 	
-	EIPH1 |= 0X02;
+	EIE |= 0X02;			//Timer3 Interrupt enable
 	
 //	TR1 = 1;     
 //	ET1 = 1;
@@ -184,12 +180,18 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 }
 
 
-void Pin_Interrupt_ISR() interrupt 7
+void Pin_Interrupt_ISR() interrupt 7 using 3
 {
-	if(PIF & 0x38)
-	{
+	if(PIF & 0x38)	//Motor Hall Signals Input
+	{		
+		PIF &= 0x00;
+		//These codes used only for Square Wave BLDC Drive
+		EA = 0;
+		CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirection());
+		UpdateBLDCInverter(CurrentElectricCycle);
+		EA = 1;
 	}
-	if(PIF & 0x40)
+	if(PIF & 0x40)	// external clock input interrupt pin
 	{
 		PIF &= 0XB0;
 		if(PulseCount < 0xff)
@@ -282,147 +284,163 @@ void UpdateSVPFreq(unsigned int n) using 3
 	T3CON |= 0X08;
 }
 
+void UpdateBLDC_Dly(unsigned int n) using 3
+{
+	T3CON &= 0XE7;
+	T3CON &= 0xF8;
+	T3CON |= 0X04;
+	RL3 = ~(n & 0xff);
+	RH3 = ~(n >> 8);
+	T3CON |= 0X08;
+}
+
 
 void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 {
 	bit ripple = 0;
 	CAPCON0 &= 0XFE;
-	if(SVPReverseSpin)
-		SVPDriveAngle = ElecAngleOffestCW;
-	else
-		SVPDriveAngle = ElecAngleOffestCCW;	
 	Previous2MechanicalDelay = Previous1MechanicalDelay;
 	Previous1MechanicalDelay = ((int)C0H << 8)+ C0L;
-	Previous4CaptureCnt = Previous3CaptureCnt;
-	Previous3CaptureCnt = Previous2CaptureCnt;
-	Previous2CaptureCnt = Previous1CaptureCnt;
-	Previous1CaptureCnt = Previous1MechanicalDelay;
-	if(SVP_Angle_Delay > 15)
+	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
-	//	ElecAngleOffestCW++;
-		SVP_Angle_Delay = 0;
-	}
-	switch(T2MOD)
-	{
-		case 0x49: break;
-		case 0x59: Previous1MechanicalDelay <<= 1; break;
-		case 0x69: Previous1MechanicalDelay <<= 2; break;
-	}
-	if(Previous4CaptureCnt > Previous3CaptureCnt)
-	{
-		if(Previous4CaptureCnt - Previous3CaptureCnt > 200)
+		if(SVPReverseSpin)
+			SVPDriveAngle = ElecAngleOffestCW;
+		else
+			SVPDriveAngle = ElecAngleOffestCCW;	
+		Previous4CaptureCnt = Previous3CaptureCnt;
+		Previous3CaptureCnt = Previous2CaptureCnt;
+		Previous2CaptureCnt = Previous1CaptureCnt;
+		Previous1CaptureCnt = Previous1MechanicalDelay;
+		if(SVP_Angle_Delay > 15)
 		{
-			ripple = 1;
+			SVP_Angle_Delay = 0;
 		}
-	}
-	else
-	{		
-		if(Previous3CaptureCnt - Previous4CaptureCnt > 200)
+		switch(T2MOD)
 		{
-			ripple = 1;
+			case 0x49: break;
+			case 0x59: Previous1MechanicalDelay <<= 1; break;
+			case 0x69: Previous1MechanicalDelay <<= 2; break;
 		}
-	}
-	if(Previous3CaptureCnt > Previous2CaptureCnt)
-	{
-		if(Previous3CaptureCnt - Previous2CaptureCnt > 200)
+		if(Previous4CaptureCnt > Previous3CaptureCnt)
 		{
-			ripple = 1;
-		}
-	}
-	else
-	{		
-		if(Previous2CaptureCnt - Previous3CaptureCnt > 200)
-		{
-			ripple = 1;
-		}
-	}
-	if(Previous2CaptureCnt > Previous1CaptureCnt)
-	{
-		if(Previous2CaptureCnt - Previous1CaptureCnt > 200)
-		{
-			ripple = 1;
-		}
-	}
-	else
-	{		
-		if(Previous1CaptureCnt - Previous2CaptureCnt > 200)
-		{
-			ripple = 1;
-		}
-	}
-	if(ripple)
-	{
-		UpdateSVPFreq(Previous1CaptureCnt);	
-	}
-	else
-	{
-		UpdateSVPFreq((Previous1CaptureCnt + Previous2CaptureCnt + Previous3CaptureCnt + Previous4CaptureCnt) >> 2);	
-	}
-/*	if(Previous2MechanicalDelay < Previous1MechanicalDelay)
-	{
-		if(ElecAngleOffestCW < 255)
-		{
-			ElecAngleOffestCW ++;
-		}
-	}
-	else
-	{
-		if(ElecAngleOffestCW > 0)
-		{
-			ElecAngleOffestCW --;
-		}
-	}*/
-	SetSpeedRange_SVPrecision();
-	if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
-	{
-		if(Stablecnt >= 4)
-		{
-			if(ENABLE_SVPWM_FOR_SYNCM)
+			if(Previous4CaptureCnt - Previous3CaptureCnt > 200)
 			{
-				SVPWMmode = 1;
+				ripple = 1;
 			}
 		}
 		else
-			Stablecnt += 1;
-	}
-	else
-	{
-		Stablecnt = 0;
-		SVPWMmode = 0;
+		{		
+			if(Previous3CaptureCnt - Previous4CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(Previous3CaptureCnt > Previous2CaptureCnt)
+		{
+			if(Previous3CaptureCnt - Previous2CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		else
+		{		
+			if(Previous2CaptureCnt - Previous3CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(Previous2CaptureCnt > Previous1CaptureCnt)
+		{
+			if(Previous2CaptureCnt - Previous1CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		else
+		{		
+			if(Previous1CaptureCnt - Previous2CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(ripple)
+		{
+			UpdateSVPFreq(Previous1CaptureCnt);	
+		}
+		else
+		{
+			UpdateSVPFreq((Previous1CaptureCnt + Previous2CaptureCnt + Previous3CaptureCnt + Previous4CaptureCnt) >> 2);	
+		}
+	/*	if(Previous2MechanicalDelay < Previous1MechanicalDelay)
+		{
+			if(ElecAngleOffestCW < 255)
+			{
+				ElecAngleOffestCW ++;
+			}
+		}
+		else
+		{
+			if(ElecAngleOffestCW > 0)
+			{
+				ElecAngleOffestCW --;
+			}
+		}*/
+		SetSpeedRange_SVPrecision();
+		if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
+		{
+			if(Stablecnt >= 4)
+			{
+				if(ENABLE_SVPWM_FOR_SYNCM)
+				{
+					SVPWMmode = 1;
+				}
+			}
+			else
+				Stablecnt += 1;
+		}
+		else
+		{
+			Stablecnt = 0;
+			SVPWMmode = 0;
+		}
 	}
 }
 
-void Timer3_Interr_ISR() interrupt 16 using 1
+void Timer3_Interr_ISR() interrupt 16 using 2
 {	
-	T3CON &= 0XEF;
-	if(SVPDriveAngle < 255-SVPAngleStep)
-		SVPDriveAngle += SVPAngleStep;
-	else
-	{
-		SVPDriveAngle = 0;
-		if(SVP_Angle_Delay < 255)
-			SVP_Angle_Delay++;
+	T3CON &= 0XEF;	//clear timer interrupt
+	if(BLDC_SENSORLESS)
+	{	
+		T3CON &= 0XE7;
+	//	debug1 = 0;
 	}
-	CalcElectricAngle = SVPDriveAngle;
-	if(SVPWMmode)
-	{		
-			if(SVPReverseSpin)
-				CalcElectricAngle = 255 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
-	}
-	else
+	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
-		CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirection());
-		UpdateBLDCInverter(CurrentElectricCycle);
+		//These codes used only for SVPWM mode
+		if(SVPDriveAngle < 255-SVPAngleStep)
+			SVPDriveAngle += SVPAngleStep;
+		else
+		{
+			SVPDriveAngle = 0;
+			if(SVP_Angle_Delay < 255)
+				SVP_Angle_Delay++;
+		}
+		CalcElectricAngle = SVPDriveAngle;
+		if(SVPWMmode)
+		{		
+				if(SVPReverseSpin)
+					CalcElectricAngle = 255 - CalcElectricAngle;
+				CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+		}
 	}
 }
 
-void PWM_Interr_ISR() interrupt 13 using 2
+void PWM_Interr_ISR() interrupt 13 using 0
 {
 	PWMF = 0;
 }
 
-void ADC_CurrentShunt_Compare_Start(unsigned char elecc) using 3
+void ADC_CurrentShunt_Compare_Start(unsigned char elecc) using 1
 {
 	ADCCON0 &= 0XF0;
 	ADCCON0 |= 0X01;
@@ -432,7 +450,7 @@ void ADC_CurrentShunt_Compare_Start(unsigned char elecc) using 3
 //	ADCCON0 |= 0X40;
 }
 
-void ADC_Interrupt_ISR() interrupt 11 using 3
+void ADC_Interrupt_ISR() interrupt 11 using 1
 {
 	unsigned char i;
 	ADCF = 0;
@@ -441,67 +459,48 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 	switch(i)
 	{
 		case 0:
-		{
 //			NTC_ADC_Value = ADCRH << 4 + ADCRL;
 			break;   //temperature adc
-		}
 		case 1:
-		{
 			Current_SENSE_ADC_Value = (ADCRH << 4) + ADCRL;
 			ADC_IsSampleCurrentFinishd = 1;
 			break;	//current sense adc
-		}
 		case 2:
-		{
 			External_Analog_ADC_Value = (ADCRH << 4) + ADCRL;
 			break;	//external analog input
-		}
 		case 3:
-		{
 			Set_Phase_U_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf w channel
-		}
 		case 4:		
-		{
 			Set_Phase_V_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf v channel
-		}
 		case 5:
-		{
 			Set_Phase_W_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf u channel
-		}
 	}	
-	EA = 0;
+	debug1 = 0;
 	if(ADC_IsSampleCurrentFinishd)
-	{		
+	{	
 		switch(ADC_Sample_Sequence[ADC_SampleTimes])
 		{
 			case DC_VOLTAGE_SMPL:
 			{
-				Determine_BEMF_Detect_Channel(CurrentElectricCycle,1);
+				Start_BEMF_Detect_ADC(CurrentElectricCycle,1);
 				break;
 			}
 			case BEMF_SMPL:
-			{		
-				Determine_BEMF_Detect_Channel(CurrentElectricCycle,2);			
-				Determine_BEMF_Detect_Channel(CurrentElectricCycle,3);
-				break;
-			}
-			case CALCULATE_BEMF:
-			{
-		//		debug1 = !debug1;	
-				ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
+			{				
+				Start_BEMF_Detect_ADC(CurrentElectricCycle,2);
 				break;
 			}
 			case NTC_ADC:
-			{
+			{	
 					ADCCON0 &= 0XF0;
 					ADCCON0 |= 0X00;
 					ADCCON1 = 0X01;////
 					ADCDLY = 0;
 					ADCCON2 = 0x00;
-					ADCCON0 |= 0X40;	//start adc
+					ADCCON0 |= 0X40;	//start adc	
 				break;
 			}
 			case EXTERNAL_ANALOG:
@@ -511,20 +510,27 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 					ADCCON1 = 0X01;////
 					ADCDLY = 0;
 					ADCCON2 = 0x00;
-					ADCCON0 |= 0X40;	//start adc
+					ADCCON0 |= 0X40;	//start adc		
 				break;
 			}
 		}
-	
 		ADC_IsSampleCurrentFinishd = 0;
 	}
 	else
 	{
 		ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
+		debug1 = 1;
+		if(BEMF_Calculate(CurrentElectricCycle))
+		{
+			if((T3CON & 0x08) == 0)
+			{
+				UpdateBLDC_Dly(Previous1MechanicalDelay);
+				//debug1 = 1;
+			}
+		}
 	}
-	EA = 1;
-//	debug1 = !debug1;	
-	if(ADC_SampleTimes >= 7)
+	debug1 = 1;	
+	if(ADC_SampleTimes >= 5)
 	{
 			ADC_SampleTimes = 0;
 	}
@@ -551,13 +557,11 @@ void main(void)
 {
 	unsigned int i;
 //	UartInit();
-//  ES = 1;
-//  EA = 1;
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
 	ADCInit();
-	SetMotorSpin(253,1);
+	SetMotorSpin(180,1);
 	TimerInit();
 //	PWM_Interrupu_Init();
 	
