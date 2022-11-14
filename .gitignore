@@ -8,6 +8,7 @@ Listings/
 Objects/*
 Listings/*
 *.lst
+*.uvgui.*
 
 #Debug middlefile
 Debug/*
@@ -761,3 +762,5 @@ cython_debug/
 Objects/DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.build_log.htm
 Objects/DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.build_log.htm
 *.lst
+*.uvopt
+*.uvopt

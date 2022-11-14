@@ -164,6 +164,8 @@ void UpdateBLDCInverter() using 1
 				TA = 0X0AA;
 				TA = 0X55;
 				SFRS = 0;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X00;	// PWM0 trig
 				break;
 			}
 			case 2: {
@@ -178,6 +180,8 @@ void UpdateBLDCInverter() using 1
 				TA = 0X55;
 				SFRS = 0;
 				PWMCON0 |= 0X40;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X00;	// PWM0 trig
 				break;
 			}
 			case 3: {
@@ -192,6 +196,8 @@ void UpdateBLDCInverter() using 1
 				TA = 0X55;
 				SFRS = 0;
 				PWMCON0 |= 0X40;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X10;	// PWM2 trig
 				break;
 			}
 			case 4: {			
@@ -206,6 +212,8 @@ void UpdateBLDCInverter() using 1
 				SFRS = 0;
 				PWM0L = 0;
 				PWMCON0 |= 0X40;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X10;	// PWM2 trig
 				break;
 			}
 			case 5: {
@@ -220,6 +228,8 @@ void UpdateBLDCInverter() using 1
 				SFRS = 0;
 				PWM0L = 0;
 				PWMCON0 |= 0X40;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X20;	// PWM4 trig
 				break;
 			}
 			case 6: {
@@ -234,6 +244,8 @@ void UpdateBLDCInverter() using 1
 				SFRS = 0;
 				PWM2L = 0;
 				PWMCON0 |= 0X40;
+				ADCCON0 &= 0XCF;
+				ADCCON0 |= 0X20;	// PWM4 trig
 				break;
 			}
 			case 0:

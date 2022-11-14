@@ -17,14 +17,25 @@ unsigned int xdata LOCK_POSITION_TIME = 500	;
 unsigned int xdata LOCK_POSITION_PWM = 26	;  
 unsigned int xdata DIREACTION_CHANGE_DELAY = 400;	
 
+unsigned int xdata MAX_FREQUENCY = 4000;
+unsigned int xdata MIN_FREQUENCY = 1;
+unsigned int xdata Current_Frequency = 0;
+unsigned int xdata FREQUENCY_SECTION_CUT = 0;
+unsigned int xdata VF_RATIO_1 = 3;
+unsigned int xdata VF_RATIO_2 = 3;
+unsigned int xdata REFERENCE_DC_VOLT = 0;
+unsigned int xdata VF_ACCELERATION_HZS2 = 1000;
+unsigned int xdata VF_DECELERATION_HZS2 = 1000;
 
-bit SVPWMmode = 0;
-bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
-bit BLDC_SENSORLESS = 1;
-volatile bit BEMF_PWM_ON_Detect = 0;
+bit BLDC_SENSORLESS = 0;
+bit ASYNC_3_PHASE = 1;
 
-bit data CShunt_ADC_Interrupt = 0;
+bit SVPWMmode = 1;
+bit SVPReverseSpin = 1;
+volatile bit BEMF_PWM_On_Detect = 1;
+
+volatile bit data CShunt_ADC_Interrupt = 0;
 
 unsigned char Adc_Smpl_Count = 0;
 
@@ -79,6 +90,11 @@ unsigned char pdata BEMF_Volt_ADC_Channel = 0;
 #define NTC_ADC         2	
 #define EXTERNAL_ANALOG 5	
 
+void delay(unsigned int i)
+{
+	while(i--);
+}
+
 const unsigned char BEMF_DCT_Params[6][3] = {
 	{0,2,0},
 	{0,1,1},
@@ -96,62 +112,6 @@ const unsigned char ADC_Sample_Sequence[]=
 
 //unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
 sbit debug1 = P0^7;
-
-//#define FOSC            30000000UL
-//#define BRT             (65536 - FOSC / 115200 / 4)
-
-//bit busy;
-//char wptr;
-//char rptr;
-//char buffer[16];
-
-//void UartIsr() interrupt 4 using 1
-//{
-//    if (TI)
-//    {
-//        TI = 0;
-//        busy = 0;
-//    }
-//    if (RI)
-//    {
-//        RI = 0;
-//        buffer[wptr++] = SBUF;
-//        wptr &= 0x0f;
-//    }
-//}
-
-void UartInit()
-{
- /*   SCON = 0x50;
-    T2L = BRT;
-    T2H = BRT >> 8;
-    AUXR = 0x15;
-    wptr = 0x00;
-    rptr = 0x00;
-    busy = 0;*/
-}
-
-//void UartSend(char dat)
-//{
-//    while (busy);
-//    busy = 1;
-//    SBUF = dat;
-//}
-
-//void UartSendStr(char *p)
-//{
-//    while (*p)
-//    {
-//        UartSend(*p++);
-//    }
-//}
-
-//void UART_Write_Int_Value(unsigned int num)
-//{
-//	UartSend(number[num%1000/100]);
-//	UartSend(number[num%100/10]);
-//	UartSend(number[num%10]);
-//}
 
 void TimerInit()
 {
@@ -225,7 +185,40 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SetSVPWMValue(pwm);
 	SVPReverseSpin = dir;
 	BLDC_SNSLess_PWM = pwm;
-	BEMF_PWM_ON_Detect = pwm > 100;
+	BEMF_PWM_On_Detect = pwm > 100;
+}
+
+/*
+void ADC_CurrentShunt_Compare_Start() using 1
+{
+	ADCCON1 = 0X07;		
+	ADCCON0 &= 0X30;
+	ADCDLY = 5;
+	ADCCON2 = 0x20;	//enable fault brake
+	CShunt_ADC_Interrupt = 1;
+	EADC = 1;
+//	ADCCON0 |= 0X40;
+}*/
+
+void ADC_CurrentShunt_Compare_Start() using 1
+{
+	ADCCON1 = 0X07;		
+	if((CurrentElectricCycle == 1)||(CurrentElectricCycle == 2))
+	{
+		ADCCON0 = 0X00;	// PWM0 trig
+	}
+	else 
+	{
+		if((CurrentElectricCycle == 3)||(CurrentElectricCycle == 4))
+			ADCCON0 = 0X10;	// PWM2 trig
+		else
+			ADCCON0 = 0X20;	// PWM4 trig
+	}
+	ADCDLY = 5;
+	ADCCON2 = 0x20;	//enable fault brake
+	CShunt_ADC_Interrupt = 1;
+	EADC = 1;
+	//ADCCON0 |= 0X40;
 }
 
 
@@ -235,13 +228,13 @@ void Pin_Interrupt_ISR() interrupt 7 using 3
 	{		
 		PIF &= 0x00;
 		//These codes used only for Square Wave BLDC Drive
-		if(!BLDC_SENSORLESS && !SVPWMmode)
+		//if(!BLDC_SENSORLESS && !SVPWMmode)
+		if(!0 && !SVPWMmode)
 		{
-			EA = 0;
 			CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
 			SetElecCycleU3(CurrentElectricCycle);
-			UpdateBLDCInverter();
-			EA = 1;
+			UpdateBLDCInverter();		
+			ADC_CurrentShunt_Compare_Start();
 		}
 	}
 	if(PIF & 0x40)	// external clock input interrupt pin
@@ -310,7 +303,7 @@ void SetSpeedRange_SVPrecision() using 1
 			T2MOD = 0x69;
 			SVPNextAngleStep = 1;
 		break;
-		
+		 
 		case 1 :
 			T2MOD = 0x59;
 			SVPNextAngleStep = 2;
@@ -337,6 +330,15 @@ void UpdateSVPFreq(unsigned int n) using 3
 	T3CON |= 0X08;
 }
 
+void SetASYNCSVPFTimerReg(unsigned int n)
+{
+	T3CON &= 0XE7;
+	RL3 = ~(n & 0xff);
+	RH3 = ~(n >> 8);
+	T3CON |= 0X08;
+}
+
+
 void UpdateBLDC_Dly(unsigned int n) using 3
 {
 	T3CON &= 0XE7;
@@ -345,27 +347,6 @@ void UpdateBLDC_Dly(unsigned int n) using 3
 	RL3 = ~(n & 0xff);
 	RH3 = ~(n >> 8);
 	T3CON |= 0X08;
-}
-
-void ADC_CurrentShunt_Compare_Start() using 1
-{
-	ADCCON1 = 0X07;		
-	if((CurrentElectricCycle == 1)||(CurrentElectricCycle == 2))
-	{
-		ADCCON0 = 0X00;	// PWM0 trig
-	}
-	else 
-	{
-		if((CurrentElectricCycle == 3)||(CurrentElectricCycle == 4))
-			ADCCON0 = 0X10;	// PWM2 trig
-		else
-			ADCCON0 = 0X20;	// PWM4 trig
-	}
-	ADCDLY = 5;
-	ADCCON2 = 0x20;	//enable fault brake
-	CShunt_ADC_Interrupt = 1;
-	EADC = 1;
-//	ADCCON0 |= 0X40;
 }
 
 void Input_Capture_Interrupt_ISR() interrupt 12 using 3
@@ -506,17 +487,18 @@ void BLDC_SNSLess_StepXL() using 2
 void ADC_PWM_FallEdge_BEMF_Dct() using 1
 {
 	ADCCON2 = 0x00;	//disable fault brake		
-	ADCCON1 = 0X03;		//PWM fallinmg Edge trig
+	ADCCON1 = 0X03;		//PWM fallinmg Edge trig	
+	ADCCON0 &= 0X70;
 	if((CurrentElectricCycle == 1)||(CurrentElectricCycle == 2))
 	{
-		ADCCON0 = 0X00 | (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM0 trig
+		ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM0 trig
 	}
 	else 
 	{
 		if((CurrentElectricCycle == 3)||(CurrentElectricCycle == 4))
-			ADCCON0 = 0X10 | (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM2 trig
+			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM2 trig
 		else
-			ADCCON0 = 0X20 | (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM4 trig
+			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM4 trig
 	}
 	ADCDLY = 20;
 	CShunt_ADC_Interrupt = 0;
@@ -535,27 +517,28 @@ void BLDC_StartUP_OnProcCalc() using 2
 		BLDC_SNSLess_PWM = LOCK_POSITION_PWM;
 	}	
 	else 
-	{UpdateBLDC_Dly(DelayMsBetweenCurrentElectricalCycle * 12);}  	
+	{
+		UpdateBLDC_Dly(DelayMsBetweenCurrentElectricalCycle * 12);
+	}  	
 	if((UsedStartupTime > Accelerationtime))
 	{
 		//startup_failed
 		BLDC_Sensorless_Status = BLDC_Run;			
 		T3CON &= 0XE7;		//Timer3 Stop
-		SetMotorSpin(101,1);
+		SetMotorSpin(150,1);
 		SetBLDCPWM(BLDC_SNSLess_PWM);		
 		
 		BLDC_SNSLess_StepXL();
 		SetElecCycleU2(CurrentElectricCycle);
 		UpdateBLDCInverter();	
-		if(BEMF_PWM_ON_Detect)
+		if(BEMF_PWM_On_Detect)
 		{
 			ADC_CurrentShunt_Compare_Start();
 		}
 		else
 		{
 			ADC_PWM_FallEdge_BEMF_Dct();
-		}
-		
+		}	
 	}
 	else
 		UsedStartupTime = UsedStartupTime + DelayMsBetweenCurrentElectricalCycle;	
@@ -582,7 +565,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 			BLDC_StartUP_OnProcCalc();
 		}
 	}
-	if(ENABLE_SVPWM_FOR_SYNCM)
+	if(ENABLE_SVPWM_FOR_SYNCM || ASYNC_3_PHASE)
 	{
 		//These codes used only for SVPWM mode
 		if(SVPDriveAngle < 255-SVPAngleStep)
@@ -617,46 +600,53 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 	ADCF = 0;
 	ADCCON1 = 0X01;		//Enable ADC and Start Converting immediately
 	
-	
-		P07 = !P07;
-	
-	if(CShunt_ADC_Interrupt)
+//	debug1 = !debug1;
+	if(BLDC_SENSORLESS)
 	{
-		Current_SENSE_ADC_Value  = (ADCRH << 4) + ADCRL;
-		//  BEMF_PWM_ON_Detect
-		if(BEMF_PWM_ON_Detect)
+		if(CShunt_ADC_Interrupt)
 		{
-			ADCCON0 = (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]) | 0x40;
+			Current_SENSE_ADC_Value  = (ADCRH << 4) + ADCRL;
+			//  BEMF_PWM_On_Detect
+			if(BEMF_PWM_On_Detect)
+			{
+				ADCCON0 &= 0X70;
+				ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]) | 0x40;
+			}
+			else
+			{
+				ADC_PWM_FallEdge_BEMF_Dct();
+			}
+			//Start ADC for DC_Volt Detection
+			adcbemfreg0s = (0X03 + BEMF_DCT_Params[CurrentElectricCycle  - 1][BEMF_CH]) | 0x40 ;
+			if(Adc_Smpl_Count < 1)
+				Adc_Smpl_Count += 1;
+			else
+				Adc_Smpl_Count = 0;
+			adcalterreg0s = ADC_Sample_Sequence[Adc_Smpl_Count] | 0x40 ;
+			if(!BEMF_PWM_On_Detect)
+			{
+				return;
+			}
+			while(ADCS);
 		}
-		else
-		{
-			ADC_PWM_FallEdge_BEMF_Dct();
-			return;
-		}
-		//Start ADC for DC_Volt Detection
-		adcbemfreg0s = (0X03 + BEMF_DCT_Params[CurrentElectricCycle  - 1][BEMF_CH]) | 0x40 ;
-		if(Adc_Smpl_Count < 1)
-			Adc_Smpl_Count += 1;
-		else
-			Adc_Smpl_Count = 0;
-		adcalterreg0s = ADC_Sample_Sequence[Adc_Smpl_Count] | 0x40 ;
+		DCBUS_ADC_Value = (ADCRH << 4) + ADCRL;
+		ADCCON0 &= 0X70;
+		ADCCON0 |= adcbemfreg0s;	//Start ADC for BEMF Detection
 		while(ADCS);
-	}
-	DCBUS_ADC_Value = (ADCRH << 4) + ADCRL;
-	ADCCON0 = adcbemfreg0s;	//Start ADC for BEMF Detection
-	while(ADCS);
-	
-	BEMF_ADC_Value = (ADCRH << 4) + ADCRL;
-	ADCCON0 = adcalterreg0s;	//Start ADC for Alternate Detection
-	bcrtnv = BEMF_Calculate(CurrentElectricCycle,DCBUS_ADC_Value,BEMF_ADC_Value,BEMF_PWM_ON_Detect);
-	while(ADCS);
-	
-	if((bcrtnv == CurrentElectricCycle)&&(BLDC_Sensorless_Status == BLDC_Run))
-	{		
-		SetBLDCPWM(BLDC_SNSLess_PWM);		
-		BLDC_SNSLess_StepXL();
-		SetElecCycleU2(CurrentElectricCycle);
-		UpdateBLDCInverter();	
+		
+		BEMF_ADC_Value = (ADCRH << 4) + ADCRL;
+		ADCCON0 &= 0X70;
+		ADCCON0 |= adcalterreg0s;	//Start ADC for Alternate Detection
+		bcrtnv = BEMF_Calculate(CurrentElectricCycle,DCBUS_ADC_Value,BEMF_ADC_Value,BEMF_PWM_On_Detect);
+		while(ADCS);
+		
+		if((bcrtnv == CurrentElectricCycle)&&(BLDC_Sensorless_Status == BLDC_Run))
+		{		
+			SetBLDCPWM(BLDC_SNSLess_PWM);		
+			BLDC_SNSLess_StepXL();
+			SetElecCycleU2(CurrentElectricCycle);
+			UpdateBLDCInverter();	
+		}
 	}
 	ADC_CurrentShunt_Compare_Start();
 //	debug1 = 0;
@@ -685,18 +675,20 @@ void BLDC_SNSless_Parms_Calc()
 void main(void)
 {
 	unsigned int i;
-//	UartInit();
+	
 	Inverter_ControlGPIO_Init();
-	HallGpioInit();
-	BEMF_Gpio_ADCIN_Init();
-	ADCInit();
-	SetMotorSpin(30,1);
-	TimerInit();
-	BLDC_SNSless_Parms_Calc();
-	
-	BLDC_Sensorless_Status = BLDC_Startup;
-	
-	UpdateBLDC_Dly(418);
+//	BLDC_SNSless_Parms_Calc();
+//	HallGpioInit();
+//	BEMF_Gpio_ADCIN_Init();
+//	ADCInit();
+//	TimerInit();
+//	
+//	SetMotorSpin(20,1);
+//	SetASYNCSVPFTimerReg(0xff);
+//	
+//	BLDC_Sensorless_Status = BLDC_Startup;
+//	
+//	UpdateBLDC_Dly(418);
 	
 //	PWM_Interrupu_Init();
 	
@@ -709,16 +701,18 @@ void main(void)
 	
 	debug1 = 1;
 	
+	SetSVPWMValue(92);
+	
 //  UartSendStr("DAS02418");
 	while(1)
 	{
-		for(i = 0;i < 254;i += 1)
+		for(i = 0;i < 247;i += 8)
 		{	
 			
 	//	BLDCTimerEventHandler();
 	//		UpdateBLDCInverter(i);
-
-			//CalculateInverterVectorsWidth_Polar(i);
+delay(80);
+			CalculateInverterVectorsWidth_Polar(i);
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");

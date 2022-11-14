@@ -1,8 +1,0 @@
-".\Objects\3PhaseInverter.obj",
-".\Objects\BLDC with Hall.obj",
-".\Objects\BLDC_Sensorless.obj",
-".\Objects\main.obj",
-".\Objects\NTC.obj",
-".\Objects\SVPWM.obj" 
-TO ".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" 
-PRINT(".\Listings\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.m51") RAMSIZE(256) 
