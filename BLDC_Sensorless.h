@@ -8,3 +8,10 @@ void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times,bit pwm_
 unsigned char BEMF_Calculate(unsigned char eleccycle);
 
 #define SAMPLE_BUFFER_LENGTH 2
+
+#define BLDC_Stop 0
+#define BLDC_Align 1
+#define BLDC_Startup 2
+#define BLDC_Run 3
+#define BLDC_IPD 4
+#define BLDC_SureStart 5

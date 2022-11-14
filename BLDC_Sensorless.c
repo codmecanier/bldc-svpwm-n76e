@@ -1,11 +1,16 @@
 #include <N76E003.h>
 #include <BLDC_Sensorless.h>
 
-#define MagDecayPulseDct 2
-#define MagDecayPulseCnt 4
+#define MagDecayPulseDct 3		//Magnent Decay Detect threshold
+#define MagDecayPulseCnt 4		//Maagnent Decay Detect Count
+
+#define PhaseSwitchCount 5
+
 unsigned int DCBUS_Voltage = 0;
 
 unsigned int data Phase_UVW_Voltage_ADC_Value[3];
+
+unsigned char data Last_Rtn = 0;
 
 const unsigned char BEMF_DCT_Params[6][3] = {
 	{0,2,0},
@@ -59,32 +64,46 @@ void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times, bit pwm
 unsigned char BEMF_Calculate(unsigned char eleccycle) using 1
 {	
 	bit bemf_cmp = 0;
+	unsigned char eleci;
 	eleccycle -= 1;	
-	DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][DC_CH]];
-	if(BEMF_DCT_Params[eleccycle][SLOPE])
+	if(PreviousBEMF_CH == eleccycle)
 	{
-		bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> 1);
-		if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> MagDecayPulseDct))
-			BEMF_Slope_Count = 0;
+		DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][DC_CH]];
+		if(BEMF_DCT_Params[eleccycle][SLOPE])
+		{
+			bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> 1);
+			if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> MagDecayPulseDct))
+				BEMF_Slope_Count = 0;
+		}
+		else
+		{
+			bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage >> 1);	
+			if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage - (DCBUS_Voltage >> MagDecayPulseDct)))
+				BEMF_Slope_Count = 0;
+		}
+		if(!bemf_cmp && (BEMF_Slope_Count <= (MagDecayPulseCnt >> 1)))
+			BEMF_Slope_Count++;
+		if(bemf_cmp && (BEMF_Slope_Count >= (MagDecayPulseCnt >> 1)) && (BEMF_Slope_Count <= MagDecayPulseCnt))
+			BEMF_Slope_Count++;
+		PrevoiusBEMF_Value = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]];	
+		if((BEMF_Slope_Count >= MagDecayPulseCnt) && bemf_cmp)
+		{
+			eleci = eleccycle + 1;
+			if(Last_Rtn != eleci)
+			{	
+				P07 = !P07;
+				Last_Rtn = eleci;	
+				return eleci;	
+			}
+		}
 	}
 	else
-	{
-		bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage >> 1);	
-		if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage - (DCBUS_Voltage >> MagDecayPulseDct)))
-			BEMF_Slope_Count = 0;
-	}
-	if(!bemf_cmp && (BEMF_Slope_Count <= (MagDecayPulseCnt >> 1)))
-		BEMF_Slope_Count++;
-	if(bemf_cmp && (BEMF_Slope_Count >= (MagDecayPulseCnt >> 1)) && (BEMF_Slope_Count <= MagDecayPulseCnt))
-		BEMF_Slope_Count++;
-	if(PreviousBEMF_CH != BEMF_DCT_Params[eleccycle][BEMF_CH])
+	{	
 		BEMF_Slope_Count = 0;
-	PreviousBEMF_CH = BEMF_DCT_Params[eleccycle][BEMF_CH];
-	PrevoiusBEMF_Value = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]];
-	if((BEMF_Slope_Count >= MagDecayPulseCnt) && bemf_cmp)
-	{
-		return 1;
+//		P07 = !P07;
+		PreviousBEMF_CH = eleccycle;
 	}
+//	P07 = 0;
 	return 0;
 }
 

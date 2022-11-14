@@ -6,11 +6,36 @@
 #include "intrins.h"
 //#include "NTC.c"
 
+unsigned char xdata StartUP_Process = 0;
+
+unsigned char xdata	STARTUP_FREQUENCY = 10;
+unsigned char xdata	STARTUP_END_FREQUENCY = 90;
+unsigned char xdata	STARTUP_PWM =	23;
+unsigned char xdata	STARTUP_END_PWM =	 150;
+unsigned int xdata ACCELERATION_TIME = 1000;
+unsigned int xdata LOCK_POSITION_TIME = 500	;  
+unsigned int xdata LOCK_POSITION_PWM = 26	;  
+unsigned int xdata DIREACTION_CHANGE_DELAY = 400;	
+volatile unsigned char xdata BEMF_SWITCH_PHASE_DELAY = 4;
+volatile unsigned char data BEMF_Phaseswitch_Count = 0;
+
+
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
 bit BLDC_SENSORLESS = 1;
 bit BEMF_PWM_ON_Detect = 0;
+volatile bit BEMF_Detect_Switch_Enable = 0;
+
+unsigned int xdata  DelayMsBetweenCurrentElectricalCycle = 0;
+unsigned int xdata  UsedStartupTime = 0; 
+unsigned int xdata  Accelerationtime = 0;
+unsigned int xdata  AccelerationFrequency = 0;	 
+unsigned int  xdata AccelerationPWM = 0;
+unsigned long xdata  CurrentFrequency = 0;
+
+unsigned char InverterPWMValue = 0;
+
 unsigned char BLDC_SNSless_30degDLY = 0;
 unsigned char ElecAngleOffestCCW = 189;
 unsigned char StableCount = 10;
@@ -33,8 +58,10 @@ unsigned int pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,P
 unsigned int pdata Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
 unsigned int pdata External_Analog_ADC_Value = 0;
 unsigned int Current_SENSE_ADC_Value = 0;
-unsigned char pdata CurrentElectricCycle = 0;
+volatile unsigned char data CurrentElectricCycle = 0;
 unsigned char ADC_SampleTimes = 0;
+unsigned char BLDC_Sensorless_Status = 0;
+
 
 unsigned char DC_Volt_ADC_Channel = 0;
 unsigned char BEMF_Volt_ADC_Channel = 0;
@@ -187,10 +214,14 @@ void Pin_Interrupt_ISR() interrupt 7 using 3
 	{		
 		PIF &= 0x00;
 		//These codes used only for Square Wave BLDC Drive
-		EA = 0;
-		CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirection());
-		UpdateBLDCInverter(CurrentElectricCycle);
-		EA = 1;
+		if(!BLDC_SENSORLESS && !SVPWMmode)
+		{
+			EA = 0;
+			CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
+			SetElecCycleU3(CurrentElectricCycle);
+			UpdateBLDCInverter();
+			EA = 1;
+		}
 	}
 	if(PIF & 0x40)	// external clock input interrupt pin
 	{
@@ -289,7 +320,7 @@ void UpdateBLDC_Dly(unsigned int n) using 3
 {
 	T3CON &= 0XE7;
 	T3CON &= 0xF8;
-	T3CON |= 0X04;
+	T3CON |= 0X07;
 	RL3 = ~(n & 0xff);
 	RH3 = ~(n >> 8);
 	T3CON |= 0X08;
@@ -412,8 +443,48 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 	T3CON &= 0XEF;	//clear timer interrupt
 	if(BLDC_SENSORLESS)
 	{	
-		T3CON &= 0XE7;
-		debug1 = 0;
+		SetBLDCPWM(InverterPWMValue);		
+		if(0)
+		{
+			if(CurrentElectricCycle<6)	CurrentElectricCycle+=1;
+			else		CurrentElectricCycle = 1;
+		}else
+		{ 
+			if(CurrentElectricCycle>1)	CurrentElectricCycle-=1;
+			else		CurrentElectricCycle = 6;
+		}
+		if(BLDC_Sensorless_Status == BLDC_Run)
+		{
+			T3CON &= 0XE7;		//Timer3 Stop
+	//		debug1 = 0;
+		}
+		SetElecCycleU2(CurrentElectricCycle);
+		UpdateBLDCInverter();
+		BEMF_Phaseswitch_Count = BEMF_SWITCH_PHASE_DELAY;
+		BEMF_Detect_Switch_Enable = 1;
+		//Calculate Startup Process
+		if(BLDC_Sensorless_Status == BLDC_Startup)
+		{
+			CurrentFrequency = 	STARTUP_FREQUENCY + (UsedStartupTime / (Accelerationtime / AccelerationFrequency ) ) ;
+			InverterPWMValue = STARTUP_PWM + (UsedStartupTime / (Accelerationtime / AccelerationPWM ) ) ;	
+			DelayMsBetweenCurrentElectricalCycle = 10000 /  CurrentFrequency;	
+			if(UsedStartupTime == 0)
+			{
+				UpdateBLDC_Dly(LOCK_POSITION_TIME * 125);			
+				InverterPWMValue = LOCK_POSITION_PWM;
+			}	
+			else 
+			{UpdateBLDC_Dly(DelayMsBetweenCurrentElectricalCycle * 12);}  	
+			if((UsedStartupTime > Accelerationtime))
+			{
+				//startup_failed
+				BLDC_Sensorless_Status = BLDC_Run;
+				T3CON &= 0XE7;		//Timer3 Stop
+				
+			}
+			else
+				UsedStartupTime = UsedStartupTime + DelayMsBetweenCurrentElectricalCycle;	
+		}
 	}
 	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
@@ -468,12 +539,12 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 			ADC_IsSampleCurrentFinishd = 1;
 			if(!BEMF_PWM_ON_Detect)
 			{	
-					if(BEMF_Calculate(CurrentElectricCycle))
+					if(BEMF_Calculate(CurrentElectricCycle) == CurrentElectricCycle)
 					{
-						if((T3CON & 0x08) == 0)
-						{
-							UpdateBLDC_Dly(Previous1MechanicalDelay);
-							debug1 = 1;
+						if((T3CON & 0X08)==0)
+						{							
+							UpdateBLDC_Dly(Previous1MechanicalDelay >> 3);
+				//			debug1 = 1;
 						}
 					}
 			}
@@ -534,12 +605,12 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 		ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
 		if(BEMF_PWM_ON_Detect)
 		{
-			if(BEMF_Calculate(CurrentElectricCycle))
+			if(BEMF_Calculate(CurrentElectricCycle) == CurrentElectricCycle)
 			{
-				if((T3CON & 0x08) == 0)
-				{
-					UpdateBLDC_Dly(Previous1MechanicalDelay);
-					debug1 = 1;
+				if((T3CON & 0X08)==0)
+				{					
+					UpdateBLDC_Dly(Previous1MechanicalDelay >> 3);
+		//			debug1 = 1;
 				}
 			}
 		}
@@ -568,6 +639,13 @@ void ADCInit()
 	EADC = 1;
 }
 
+void BLDC_SNSless_Parms_Calc()
+{
+	Accelerationtime = ACCELERATION_TIME * 10;
+	AccelerationFrequency = STARTUP_END_FREQUENCY - STARTUP_FREQUENCY;
+	AccelerationPWM	 = STARTUP_END_PWM - STARTUP_PWM ;
+}
+
 void main(void)
 {
 	unsigned int i;
@@ -576,9 +654,16 @@ void main(void)
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
 	ADCInit();
-	SetMotorSpin(92,1);
+	SetMotorSpin(150,1);
 	TimerInit();
+	BLDC_SNSless_Parms_Calc();
+	
+	BLDC_Sensorless_Status = BLDC_Startup;
+	
+	UpdateBLDC_Dly(418);
+	
 //	PWM_Interrupu_Init();
+	
 	
 	P0M1 &= 0x7f;
 	P0M2 |= 0x80;

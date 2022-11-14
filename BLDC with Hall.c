@@ -11,6 +11,7 @@ sbit P14 = P1^4;
 sbit P15 = P1^5;
 
 unsigned char BLDCSpeed;
+unsigned char eleccycle = 0;
 
 static unsigned char BLDC_Previous_Cycle = 0;
 
@@ -20,7 +21,25 @@ void SetBLDCDirPWM(unsigned char pwm, bit dir)
 	BLDCSpeed = pwm;
 }
 
+void SetElecCycleU2(unsigned char i) using 2
+{
+	eleccycle = i;
+}
+
+void SetElecCycleU3(unsigned char i) using 3
+{
+	eleccycle = i;
+}
+
+void SetBLDCPWM(unsigned char pwm) using 2
+{
+	BLDCSpeed = pwm;
+}
+
 bit GetBLDCDirection()
+{return BLDCReverse;}
+
+unsigned char GetBLDCDirectionU3() using 3
 {return BLDCReverse;}
 
 void UpdateHall() using 2
@@ -119,7 +138,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 3
 	return 0;
 }
 
-void UpdateBLDCInverter(unsigned char eleccycle) using 3
+void UpdateBLDCInverter() using 3
 {
 	if(BLDC_Previous_Cycle!= eleccycle)
 	{
