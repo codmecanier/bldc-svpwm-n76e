@@ -10,6 +10,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x0</ToolsetNumber>
       <ToolsetName>MCS-51</ToolsetName>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>N76E003</Device>
@@ -45,7 +46,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>SVPWM with HallSensor</OutputName>
+          <OutputName>DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -82,6 +83,8 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopA1X>0</nStopA1X>
+            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -146,7 +149,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>-1</TargetSelection>
+          <TargetSelection>10</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -168,12 +171,12 @@
             <UseTargetDll>1</UseTargetDll>
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
-            <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <UpdateFlashBeforeDebugging>0</UpdateFlashBeforeDebugging>
+            <Capability>1</Capability>
+            <DriverSelection>4102</DriverSelection>
           </Flash1>
-          <bUseTDR>1</bUseTDR>
-          <Flash2></Flash2>
+          <bUseTDR>0</bUseTDR>
+          <Flash2>BIN\Nuvoton_8051_Keil_uVision_Driver.dll</Flash2>
           <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
@@ -215,12 +218,14 @@
             <Mx51P>0</Mx51P>
             <hadXRAM2>0</hadXRAM2>
             <uocXram2>0</uocXram2>
+            <hadXRAM3>0</hadXRAM3>
             <ModC2>0</ModC2>
             <ModH2>0</ModH2>
             <Mdu_R515>0</Mdu_R515>
             <Mdu_F120>0</Mdu_F120>
             <Psoc>0</Psoc>
             <hadIROM2>0</hadIROM2>
+            <hadIROM3>0</hadIROM3>
             <ModSmx2>0</ModSmx2>
             <cBanks>0</cBanks>
             <xBanks>0</xBanks>
@@ -290,6 +295,16 @@
                 <StartAddress>0x0</StartAddress>
                 <Size>0x0</Size>
               </IROM512>
+              <XRA513>
+                <Type>0</Type>
+                <StartAddress>0x0</StartAddress>
+                <Size>0x0</Size>
+              </XRA513>
+              <IROM513>
+                <Type>0</Type>
+                <StartAddress>0x0</StartAddress>
+                <Size>0x0</Size>
+              </IROM513>
             </OnChipMemories>
           </Target51Misc>
           <C51>
@@ -362,24 +377,9 @@
           <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
-              <FileName>STARTUP.A51</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\STARTUP.A51</FilePath>
-            </File>
-            <File>
-              <FileName>SVPWM.c</FileName>
+              <FileName>3PhaseInverter.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SVPWM.c</FilePath>
-            </File>
-            <File>
-              <FileName>SVPWM.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\SVPWM.h</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
+              <FilePath>.\3PhaseInverter.c</FilePath>
             </File>
             <File>
               <FileName>BLDC with Hall.c</FileName>
@@ -387,9 +387,24 @@
               <FilePath>.\BLDC with Hall.c</FilePath>
             </File>
             <File>
-              <FileName>3PhaseInverter.c</FileName>
+              <FileName>BLDC_Sensorless.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\3PhaseInverter.c</FilePath>
+              <FilePath>.\BLDC_Sensorless.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>NTC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\NTC.c</FilePath>
+            </File>
+            <File>
+              <FileName>SVPWM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SVPWM.c</FilePath>
             </File>
             <File>
               <FileName>3PhaseInverter.h</FileName>
@@ -400,6 +415,26 @@
               <FileName>BLDC with Hall.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\BLDC with Hall.h</FilePath>
+            </File>
+            <File>
+              <FileName>BLDC_Sensorless.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BLDC_Sensorless.h</FilePath>
+            </File>
+            <File>
+              <FileName>N76E003.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\N76E003.h</FilePath>
+            </File>
+            <File>
+              <FileName>NTC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\NTC.h</FilePath>
+            </File>
+            <File>
+              <FileName>SVPWM.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\SVPWM.h</FilePath>
             </File>
           </Files>
         </Group>
