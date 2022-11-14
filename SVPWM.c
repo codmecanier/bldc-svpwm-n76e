@@ -226,7 +226,7 @@ unsigned char xdata T2Array[]={220,
 233,231,228,225,222,
 };
 
-void SetSVPWMValue(unsigned char length)   // Multiply the SVPWM time periods then load it into the table
+void SetSVPWMValue(unsigned char length)
 {
 	unsigned char i = 0;
 	for(i = 0;i < 255;i += 1)

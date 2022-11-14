@@ -4,6 +4,7 @@
 
 bit BLDCReverse = 1;
 bit HA,HB,HC;
+bit Hall_Mode_60deg = 1;
 
 unsigned char BLDCSpeed;
 
@@ -35,53 +36,12 @@ void HallGpioInit()
 	HBPort = 1;
 	HCPort = 1;
 }
-/*
-unsigned char DetermineCurrentElecCycle(bit reverse)
-{
-	if(HA && !HB && HC)
-		if(reverse)
-			return 4;
-		else
-			return 1;
-		
-	if(HA && !HB && !HC)
-		if(reverse)
-			return 5;
-		else
-			return 2;
-		
-	if(HA && HB && !HC)
-		if(reverse)
-			return 6;
-		else
-			return 3;
-		
-	if(!HA && HB && !HC)
-		if(reverse)
-			return 1;
-		else
-			return 4;
-		
-	if(!HA && HB && HC)
-		if(reverse)
-			return 2;
-		else
-			return 5;
-		
-	if(!HA && !HB && HC)
-		if(reverse)
-			return 3;
-		else
-			return 6;
-	return 0;
-}
-*/
 
 unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 {	
 	if(HAPort)
 	{
-		if(HBPort)
+		if(Hall_Mode_60deg ^ HBPort)
 		{
 			if(HCPort)
 			{
@@ -102,6 +62,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 		{
 			if(HCPort)
 			{
+				return 0;		//error
 			}
 			else
 			{
@@ -114,7 +75,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 	}
 	else
 	{
-		if(HBPort)
+		if(Hall_Mode_60deg ^ HBPort)
 		{
 			if(HCPort)
 			{
@@ -122,6 +83,10 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 1
 					return 6;
 				else
 					return 4;
+			}
+			else
+			{
+				return 0; //error
 			}
 		}
 		else
