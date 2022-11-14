@@ -236,7 +236,11 @@ void SetSVPWMValue(unsigned char length)   // Multiply the SVPWM time periods th
 	}
 }
 
+<<<<<<< Updated upstream
 void CalculateInverterVectorsWidth_Polar(unsigned char deg) using 1
+=======
+void CalculateInverterVectorsWidth_Polar(unsigned char deg) using 2
+>>>>>>> Stashed changes
 {
 	T1 = T1Array[deg];
 	T2 = T2Array[deg];
