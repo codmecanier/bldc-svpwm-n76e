@@ -5,3 +5,5 @@ void Set_Phase_V_Voltage_ADC_Value(unsigned int i);
 void Set_Phase_W_Voltage_ADC_Value(unsigned int i);
 
 void Determine_BEMF_Detect_Channel(unsigned char eleccycle, unsigned char times);
+
+#define SAMPLE_BUFFER_LENGTH 2

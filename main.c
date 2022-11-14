@@ -28,7 +28,7 @@ unsigned int pdata PulseCount = 0;
 unsigned char SVP_Angle_Delay = 0;
 unsigned int pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,Previous4CaptureCnt;
 unsigned int pdata Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
-unsigned int External_Analog_ADC_Value = 0;
+unsigned int pdata External_Analog_ADC_Value = 0;
 unsigned int Current_SENSE_ADC_Value = 0;
 unsigned char pdata CurrentElectricCycle = 0;
 unsigned char ADC_SampleTimes = 0;
@@ -36,23 +36,24 @@ unsigned char ADC_SampleTimes = 0;
 unsigned char DC_Volt_ADC_Channel = 0;
 unsigned char BEMF_Volt_ADC_Channel = 0;
 
-bit ADC_ISR_first_time = 0;
+static bit ADC_IsSampleCurrentFinishd = 0;
 //unsigned int NTC_ADC_Value;
 
 #define DC_VOLTAGE_SMPL 0
 #define BEMF_SMPL       1
 #define NTC_ADC         2	
-#define DC_VOLTAGE_SMPL 3
-#define BEMF_SMPL       4
 #define EXTERNAL_ANALOG 5	
+#define CALCULATE_BEMF  6
 
-unsigned char code ADC_Sample_Sequence[]=
+unsigned char data ADC_Sample_Sequence[]=
 {
 DC_VOLTAGE_SMPL ,
 BEMF_SMPL       ,
+CALCULATE_BEMF	,
 NTC_ADC         ,	
 DC_VOLTAGE_SMPL ,
 BEMF_SMPL       ,
+CALCULATE_BEMF	,
 EXTERNAL_ANALOG ,	
 };
 
@@ -106,12 +107,6 @@ void UartSendStr(char *p)
     {
         UartSend(*p++);
     }
-}
-
-
-void delay(unsigned long t)
-{
-	while(t--);
 }
 
 void UART_Write_Int_Value(unsigned int num)
@@ -427,9 +422,10 @@ void PWM_Interr_ISR() interrupt 13 using 2
 	PWMF = 0;
 }
 
-void ADC_CurrentShunt_Compare_Start() using 3
+void ADC_CurrentShunt_Compare_Start(unsigned char elecc) using 3
 {
-	ADCCON0 = 0X01;
+	ADCCON0 &= 0XF0;
+	ADCCON0 |= 0X01;
 	ADCCON1 = 0X07;
 	ADCDLY = 5;
 	ADCCON2 = 0x20;	//enable fault brake
@@ -438,9 +434,11 @@ void ADC_CurrentShunt_Compare_Start() using 3
 
 void ADC_Interrupt_ISR() interrupt 11 using 3
 {
+	unsigned char i;
 	ADCF = 0;
+	i = ADCCON0 & 0X07;
 //	debug1 = !debug1;
-	switch(ADCCON0 & 0X07)
+	switch(i)
 	{
 		case 0:
 		{
@@ -449,32 +447,33 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 		}
 		case 1:
 		{
-			Current_SENSE_ADC_Value = ADCRH << 4 + ADCRL;
-			ADC_ISR_first_time = 1;
+			Current_SENSE_ADC_Value = (ADCRH << 4) + ADCRL;
+			ADC_IsSampleCurrentFinishd = 1;
 			break;	//current sense adc
 		}
 		case 2:
 		{
-			External_Analog_ADC_Value = ADCRH << 4 + ADCRL;
+			External_Analog_ADC_Value = (ADCRH << 4) + ADCRL;
 			break;	//external analog input
 		}
 		case 3:
 		{
-			Set_Phase_U_Voltage_ADC_Value(ADCRH << 4 + ADCRL);
+			Set_Phase_U_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf w channel
 		}
 		case 4:		
 		{
-			Set_Phase_V_Voltage_ADC_Value(ADCRH << 4 + ADCRL);
+			Set_Phase_V_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf v channel
 		}
 		case 5:
 		{
-			Set_Phase_W_Voltage_ADC_Value(ADCRH << 4 + ADCRL);
+			Set_Phase_W_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf u channel
 		}
 	}	
-	if(ADC_ISR_first_time)
+	EA = 0;
+	if(ADC_IsSampleCurrentFinishd)
 	{		
 		switch(ADC_Sample_Sequence[ADC_SampleTimes])
 		{
@@ -485,13 +484,20 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 			}
 			case BEMF_SMPL:
 			{		
-				Determine_BEMF_Detect_Channel(CurrentElectricCycle,2);
+				Determine_BEMF_Detect_Channel(CurrentElectricCycle,2);			
 				Determine_BEMF_Detect_Channel(CurrentElectricCycle,3);
+				break;
+			}
+			case CALCULATE_BEMF:
+			{
+		//		debug1 = !debug1;	
+				ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
 				break;
 			}
 			case NTC_ADC:
 			{
-					ADCCON0 = 0;
+					ADCCON0 &= 0XF0;
+					ADCCON0 |= 0X00;
 					ADCCON1 = 0X01;////
 					ADCDLY = 0;
 					ADCCON2 = 0x00;
@@ -500,7 +506,8 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 			}
 			case EXTERNAL_ANALOG:
 			{
-					ADCCON0 = 2;
+					ADCCON0 &= 0XF0;
+					ADCCON0 |= 0X02;
 					ADCCON1 = 0X01;////
 					ADCDLY = 0;
 					ADCCON2 = 0x00;
@@ -509,18 +516,22 @@ void ADC_Interrupt_ISR() interrupt 11 using 3
 			}
 		}
 	
-		ADC_ISR_first_time = 0;
+		ADC_IsSampleCurrentFinishd = 0;
 	}
 	else
 	{
-		ADC_CurrentShunt_Compare_Start();
+		ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
 	}
+	EA = 1;
 //	debug1 = !debug1;	
-	if(ADC_SampleTimes >= 5)
+	if(ADC_SampleTimes >= 7)
 	{
 			ADC_SampleTimes = 0;
 	}
-	ADC_SampleTimes += 1;
+	else
+	{
+		ADC_SampleTimes += 1;
+	}
 }
 
 void Set_Currrent_Limit_Threshold(unsigned int th)
@@ -532,7 +543,7 @@ void Set_Currrent_Limit_Threshold(unsigned int th)
 void ADCInit()
 {
 	Set_Currrent_Limit_Threshold(0xfff);
-	ADC_CurrentShunt_Compare_Start();
+	ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
 	EADC = 1;
 }
 
@@ -546,7 +557,7 @@ void main(void)
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
 	ADCInit();
-	SetMotorSpin(230,1);
+	SetMotorSpin(253,1);
 	TimerInit();
 //	PWM_Interrupu_Init();
 	
@@ -566,7 +577,6 @@ void main(void)
 			
 	//	BLDCTimerEventHandler();
 	//		UpdateBLDCInverter(i);
-			delay(254);
 
 			//CalculateInverterVectorsWidth_Polar(i);
 /*			UART_Write_Int_Value(CalcElectricAngle);
