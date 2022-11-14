@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    01/23/2019 17:22:28 PAGE 1   
+C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    03/02/2019 14:43:25 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE 3PHASEINVERTER
@@ -20,50 +20,51 @@ line level    source
   10   1        P0M1 &= 0XF4;
   11   1        P0M2 |= 0X0B;
   12   1        P1M1 &= 0XF8;
-  13   1        P1M2 |= 0X07;
-  14   1      /*  P11 = 1;
-  15   1        P12 = 1;
-  16   1        P10 = 1;
-  17   1        P00 = 1;
-  18   1        P01 = 1;
-  19   1        P03 = 1;*/
-  20   1        PIOCON0 = 0X3F;
-  21   1        PWMCON1 = 0X50;
-  22   1        PMEN = 0X3f;
-  23   1        PMD = 0x00;
-  24   1        PNP = 0X00;
-  25   1        FBD = 0X00;
-  26   1        PWMPL = 0Xff;
-  27   1        PWMPH = 0X00;
-  28   1        PWM2L = 0X00;
-  29   1        PWM2H = 0X00;
-  30   1        PWM0L = 0X00;
-  31   1        PWM0H = 0X00;
-  32   1        TA = 0X0AA;
-  33   1        TA = 0X55;
-  34   1        SFRS = 1;
-  35   1        PWM4L = 0X00;
-  36   1        PWM4H = 0X00;
-  37   1        TA = 0X0AA;
-  38   1        TA = 0X55;
-  39   1        SFRS = 0;
-  40   1        TA = 0X0AA;
-  41   1        TA = 0X55;
-  42   1        PDTEN = 0X07;
-  43   1        TA = 0X0AA;
-  44   1        TA = 0X55;
-  45   1        PDTCNT = DEADTIME;
-  46   1        PWMCON0 = 0XC0;
-  47   1      //  while(1);
-  48   1        TurnOFFALLSwitches();
-  49   1      }
+  13   1      
+  14   1        P1M2 |= 0X07;
+  15   1      /*  P11 = 1;
+  16   1        P12 = 1;
+  17   1        P10 = 1;
+  18   1        P00 = 1;
+  19   1        P01 = 1;
+  20   1        P03 = 1;*/
+  21   1        PIOCON0 = 0X3F;
+  22   1        PWMCON1 = 0X51;
+  23   1        PMEN = 0X3f;
+  24   1        PMD = 0x00;
+  25   1        PNP = 0X00;
+  26   1        FBD = 0X00;
+  27   1        PWMPL = 0Xff;
+  28   1        PWMPH = 0X00;
+  29   1        PWM2L = 0X00;
+  30   1        PWM2H = 0X00;
+  31   1        PWM0L = 0X00;
+  32   1        PWM0H = 0X00;
+  33   1        TA = 0X0AA;
+  34   1        TA = 0X55;
+  35   1        SFRS = 1;
+  36   1        PWM4L = 0X00;
+  37   1        PWM4H = 0X00;
+  38   1        TA = 0X0AA;
+  39   1        TA = 0X55;
+  40   1        SFRS = 0;
+  41   1        TA = 0X0AA;
+  42   1        TA = 0X55;
+  43   1        PDTEN = 0X07;
+  44   1        TA = 0X0AA;
+  45   1        TA = 0X55;
+  46   1        PDTCNT = DEADTIME;
+  47   1        PWMCON0 = 0XC0;
+  48   1      //  while(1);
+  49   1        TurnOFFALLSwitches();
+  50   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
    CODE SIZE        =     90    ----
-   CONSTANT SIZE    =   ----    ----
-C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    01/23/2019 17:22:28 PAGE 2   
+C51 COMPILER V9.59.0.0   3PHASEINVERTER                                                    03/02/2019 14:43:25 PAGE 2   
 
+   CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
