@@ -2,8 +2,11 @@
 #include <SVPWM.h>
 #include <3PhaseInverter.h>
 #include <BLDC with Hall.h>
+#include <BLDC_Sensorless.h>
 #include "intrins.h"
+//#include "NTC.c"
 
+<<<<<<< Updated upstream
 /************  The Configuration area  ***************
  
  
@@ -84,48 +87,133 @@ void UartSendStr(char *p)
     }
 }
 
+=======
+unsigned char xdata StartUP_Process = 0;
 
-void delay(unsigned long t)
-{
-	while(t--);
-}
+unsigned char xdata	STARTUP_FREQUENCY = 10;
+unsigned char xdata	STARTUP_END_FREQUENCY = 70;
+unsigned char xdata	STARTUP_PWM =	23;
+unsigned char xdata	STARTUP_END_PWM = 50;
+unsigned int xdata ACCELERATION_TIME = 1000;
+unsigned int xdata LOCK_POSITION_TIME = 500	;  
+unsigned int xdata LOCK_POSITION_PWM = 26	;  
+unsigned int xdata DIREACTION_CHANGE_DELAY = 400;	
 
-void UART_Write_Int_Value(unsigned int num)
+
+bit SVPWMmode = 0;
+bit SVPReverseSpin = 1;
+bit ENABLE_SVPWM_FOR_SYNCM = 0;
+bit BLDC_SENSORLESS = 0;
+volatile bit BEMF_PWM_ON_Detect = 1;
+
+volatile bit data CShunt_ADC_Interrupt = 0;
+
+unsigned char Adc_Smpl_Count = 0;
+
+unsigned int xdata  DelayMsBetweenCurrentElectricalCycle = 0;
+unsigned int xdata  UsedStartupTime = 0; 
+unsigned int xdata  Accelerationtime = 0;
+unsigned int xdata  AccelerationFrequency = 0;	 
+unsigned int  xdata AccelerationPWM = 0;
+unsigned long xdata  CurrentFrequency = 0;
+
+unsigned char pdata BLDC_SNSLess_PWM = 0;
+unsigned char adcbemfreg0s,adcalterreg0s,bcrtnv = 0;
+
+unsigned char pdata ElecAngleOffestCCW = 189;
+unsigned char pdata StableCount = 10;
+unsigned char pdata ElecAngleOffestCW = 215; // 238wm // 222
+unsigned char pdata SVPAngleStep = 1;
+unsigned char pdata SVPNextAngleStep = 1;
+unsigned char pdata SpeedRippleLimitforSVP = 2;
+unsigned int pdata SpeedLowLimitforSVP = 6000;
+unsigned int pdata SatiSCyclesSwSVP = 0;
+unsigned char pdata Stablecnt = 0;
+unsigned int pdata SpeedCount = 0;
+unsigned char pdata PrevoiusMechinalCycle = 0;
+unsigned int pdata CalcElectricAngle = 0;
+unsigned int pdata  SVPDriveAngle = 0;
+unsigned char pdata SVPWMCurPWM = 0;
+unsigned char xdata ExecuteSVPBL_PWM = 0;
+unsigned int pdata PulseCount = 0;
+unsigned char pdata SVP_Angle_Delay = 0;
+volatile unsigned int pdata Previous1MechanicalDelay,Previous2MechanicalDelay;
+unsigned int pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,Previous4CaptureCnt;
+unsigned int pdata CurrentElectricAngle, PreviousElectricAngle;
+
+unsigned int data External_Analog_ADC_Value = 0;
+unsigned int data Current_SENSE_ADC_Value = 0;
+unsigned int data BEMF_ADC_Value = 0;
+unsigned int data DCBUS_ADC_Value = 0;
+
+volatile unsigned char pdata CurrentElectricCycle = 0;
+unsigned char ADC_SampleTimes = 0;
+unsigned char pdata BLDC_Sensorless_Status = 0;
+
+
+unsigned char pdata DC_Volt_ADC_Channel = 0;
+unsigned char pdata BEMF_Volt_ADC_Channel = 0;
+
+//unsigned int NTC_ADC_Value;
+
+#define DC_VOLTAGE_SMPL 0
+#define BEMF_SMPL       1
+#define NTC_ADC         2	
+#define EXTERNAL_ANALOG 5	
+
+const unsigned char BEMF_DCT_Params[6][3] = {
+	{0,2,0},
+	{0,1,1},
+	{1,0,0},
+	{1,2,1},
+	{2,1,0},
+	{2,0,1},
+};
+>>>>>>> Stashed changes
+
+const unsigned char ADC_Sample_Sequence[]=
 {
-	UartSend(number[num%1000/100]);
-	UartSend(number[num%100/10]);
-	UartSend(number[num%10]);
-}
+	NTC_ADC,
+	EXTERNAL_ANALOG ,	
+};
+
+//unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
+sbit debug1 = P0^7;
 
 void TimerInit()
 {
 //	CKCON |= 0X18;
-	TMOD = 0x00;   
-	T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59 Corresponds to different scaling factor (256, 128, 64)
-	RCMP2H = 0XFF;  // Reaload value of Timer2
-	RCMP2H = 0XFE;
+	TMOD = 0x00; 
 
-	CAPCON0 |= 0X10;
-	CAPCON1 = 0X00;
-	CAPCON2 = 0X10;
-	CAPCON3 = 0X04;
+	if(BLDC_SENSORLESS)
+	{
+		T2MOD = 0X60; //Set Timer2 Params
+		TH2 = TL2 = 0;
+	}
+	else
+	{
+		T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59
+			
+		CAPCON0 |= 0X10;	//Hall Signal Capture
+		CAPCON1 = 0X00;
+		CAPCON2 = 0X10;
+	//	CAPCON3 = 0X04;
+		CAPCON3 = 0X08;
+		RCMP2H = 0XFF;
+		RCMP2H = 0XFE;
+		EIE |= 0X04;		//input capture interrupt enable
+	}
 	
-	RL3 = 0X00;
-	RH3 = 0XF0;
+//	RL3 = 0X00;
+//	RH3 = 0XF0;
 	EIE1 |= 0X02;
-	T3CON &= 0XEF;
-	T3CON |= 0X08;
+//	T3CON &= 0XEF;
+//	T3CON |= 0X08;
 	
 	TH1 = 0x70;
 	TL1 = 0x24;
-	EIE |= 0X04;
 	
-	T2CON |= 0X04; // TR2 = 1, Timer 2 Run
-	
-	EIPH |= 0X04;
-	EIP &= 0XFB;
-	EIP |= 0X80;
-	EIPH &= 0X7F;
+	T2CON |= 0X04;
 	
 	TMOD |= 0x01;	
 	TL0 = 0xAB;	
@@ -134,17 +222,22 @@ void TimerInit()
 	TR0 = 1;
 	ET0 = 1;
 	
-	PICON = 0XFD;
-	PINEN |= 0X58;
+	//Pin interrupts settings
+	PICON = 0XFD;				//P1 interrupts edge triggled
+	PINEN |= 0X78;
 	PIPEN |= 0X38;
-	EIE |= 0X02;
 	
-	EIPH |= 0X80;
+	//IRQ Priority settings
+	IP |= 0x00;				//ADC priority second
+	IPH |= 0x40;
+	
 	EIP |= 0X80;
+	EIPH |= 0X80;			//PWM priority first
 	
-	EIP |= 0X26;
+	EIP1 |= 0x02;
+	EIPH1 |= 0x02;
 	
-	EIPH1 |= 0X02;
+	EIE |= 0X02;			//Timer3 Interrupt enable
 	
 //	TR1 = 1;     
 //	ET1 = 1;
@@ -158,49 +251,95 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SetBLDCDirPWM(blpwm,dir);
 	SetSVPWMValue(pwm);
 	SVPReverseSpin = dir;
+<<<<<<< Updated upstream
+=======
+	BLDC_SNSLess_PWM = pwm;
+	BEMF_PWM_ON_Detect = pwm > 100;
 }
 
-// GPIO 上升沿下降沿中断函数
-void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge triggered interrupt
+/*
+void ADC_CurrentShunt_Compare_Start() using 1
 {
-	// 8 PIFs corresponds to eight GPIO interrupt sources independently
-	if(PIF & 0x38) // Interrupt triggered by bit {3,4,5}
-	{	// The Hall sensor Communitation counts here
-	}
-	if(PIF & 0x40)	// Interrupt triggered by the external clocking speed input
+	ADCCON1 = 0X07;		
+	ADCCON0 &= 0X30;
+	ADCDLY = 5;
+	ADCCON2 = 0x20;	//enable fault brake
+	CShunt_ADC_Interrupt = 1;
+	EADC = 1;
+//	ADCCON0 |= 0X40;
+}*/
+
+void ADC_CurrentShunt_Compare_Start() using 1
+{
+	ADCCON1 = 0X07;		
+	if((CurrentElectricCycle == 1)||(CurrentElectricCycle == 2))
 	{
-		PIF &= 0XB0;	// Clear External Clock input Flag
-		if(PulseCount < 0xff)
-			PulseCount++;	// Count the number of pulses in one clock period
+		ADCCON0 = 0X00;	// PWM0 trig
 	}
-	PIF &= 0x00; // Clear All the GPIO rising edge or falling edge triggered Flags
+	else 
+	{
+		if((CurrentElectricCycle == 3)||(CurrentElectricCycle == 4))
+			ADCCON0 = 0X10;	// PWM2 trig
+		else
+			ADCCON0 = 0X20;	// PWM4 trig
+	}
+	ADCDLY = 5;
+	ADCCON2 = 0x20;	//enable fault brake
+	CShunt_ADC_Interrupt = 1;
+	EADC = 1;
+	//ADCCON0 |= 0X40;
+>>>>>>> Stashed changes
 }
 
-void Timer0_ISR() interrupt 1  // Timer O Used for Speed ramping now
+
+void Pin_Interrupt_ISR() interrupt 7 using 3
 {
-	TR0 = 0; // Stop Timer0
+	if(PIF & 0x38)	//Motor Hall Signals Input
+	{		
+		PIF &= 0x00;
+		//These codes used only for Square Wave BLDC Drive
+		//if(!BLDC_SENSORLESS && !SVPWMmode)
+		if(!0 && !SVPWMmode)
+		{
+			CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
+			SetElecCycleU3(CurrentElectricCycle);
+			UpdateBLDCInverter();		
+			ADC_CurrentShunt_Compare_Start();
+		}
+	}
+	if(PIF & 0x40)	// external clock input interrupt pin
+	{
+		PIF &= 0XB0;
+		if(PulseCount < 0xff)
+			PulseCount++;
+	}
+	PIF &= 0x00;
+}
+
+void Timer0_ISR() interrupt 1
+{
+	TR0 = 0;
 	TF0 = 0;
-	TL0 = 0xAB;	 // Load Initial Values
+	TL0 = 0xAB;	
 	TH0 = 0x2F;
 	PulseCount = 64;
 	if(ExecuteSVPBL_PWM < PulseCount) ExecuteSVPBL_PWM++;
 	if(ExecuteSVPBL_PWM > PulseCount) ExecuteSVPBL_PWM--;
-	SetMotorSpin(ExecuteSVPBL_PWM,1);
+//	SetMotorSpin(ExecuteSVPBL_PWM,1);
 	PulseCount = 0;
-	TR0 = 1; 	//	Start Timer0
+	TR0 = 1;
 }
 
-// Set the SVPWM Precision according to the current perios
-void SetSpeedRange_SVPrecision() using 1   
+void SetSpeedRange_SVPrecision() using 1
 {
 	unsigned char i;
-	switch(T2MOD)	// First read out the Period under differnet Timer scaling factors
+	switch(T2MOD)
 	{
 		case 0x69:
 		{
 		if(C0H < 1)
 			i = 2;
-		else if(C0H < 3)
+		else if(C0H < 4)
 			i = 1;
 		else
 			i = 0;
@@ -230,17 +369,17 @@ void SetSpeedRange_SVPrecision() using 1
 	SVPAngleStep = SVPNextAngleStep;
 	switch(i)
 	{
-		default :	// Full SVPWM precision (8 bits)
-			T2MOD = 0x69;  // Set the timer scaling factor back
+		default :
+			T2MOD = 0x69;
 			SVPNextAngleStep = 1;
 		break;
-		
-		case 1 :	// Halved SVPWM precision
+		 
+		case 1 :
 			T2MOD = 0x59;
 			SVPNextAngleStep = 2;
 		break;
 		
-		case 2 :	// Quadarple reduced SVPWM Precision
+		case 2 :
 			T2MOD = 0x49;
 			SVPNextAngleStep = 4;
 		break;
@@ -253,6 +392,7 @@ void PWM_Interrupu_Init()
 }
  
 
+<<<<<<< Updated upstream
 void UpdateSVPFreq(unsigned char th, unsigned char tl) using 3
 {
 	T3CON &= 0XE7;
@@ -261,83 +401,363 @@ void UpdateSVPFreq(unsigned char th, unsigned char tl) using 3
 	T3CON |= 0X08;
 }
 
+=======
+void UpdateSVPFreq(unsigned int n) using 3
+{
+	T3CON &= 0XE7;
+	RL3 = ~(n & 0xff);
+	RH3 = ~(n >> 8);
+	T3CON |= 0X08;
+}
+
+void UpdateBLDC_Dly(unsigned int n) using 3
+{
+	T3CON &= 0XE7;
+	T3CON &= 0xF8;
+	T3CON |= 0X07;
+	RL3 = ~(n & 0xff);
+	RH3 = ~(n >> 8);
+	T3CON |= 0X08;
+}
+>>>>>>> Stashed changes
 
 void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 {
+	bit ripple = 0;
 	CAPCON0 &= 0XFE;
-	if(SVPReverseSpin)
-		SVPDriveAngle = ElecAngleOffestCW;
-	else
-		SVPDriveAngle = ElecAngleOffestCCW;	
 	Previous2MechanicalDelay = Previous1MechanicalDelay;
-
-	// Capture the Angular Speed and compensate it according to the T2MOD value 
+	EADC = 0;
 	Previous1MechanicalDelay = ((int)C0H << 8)+ C0L;
-	switch(T2MOD)
+	EADC = 1;
+	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
-		case 0x49: break;
-		case 0x59: Previous1MechanicalDelay <<= 1; break;
-		case 0x69: Previous1MechanicalDelay <<= 2; break;
-	}
-	UpdateSVPFreq(255-C0H,255-C0L);	
-	SetSpeedRange_SVPrecision();
-	if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
-	{
-		if(Stablecnt >= 4)
+		if(SVPReverseSpin)
+			SVPDriveAngle = ElecAngleOffestCW;
+		else
+			SVPDriveAngle = ElecAngleOffestCCW;	
+		Previous4CaptureCnt = Previous3CaptureCnt;
+		Previous3CaptureCnt = Previous2CaptureCnt;
+		Previous2CaptureCnt = Previous1CaptureCnt;
+		Previous1CaptureCnt = Previous1MechanicalDelay;
+		if(SVP_Angle_Delay > 15)
 		{
-			SVPWMmode = 1;
+			SVP_Angle_Delay = 0;
+		}
+		switch(T2MOD)
+		{
+			case 0x49: break;
+			case 0x59: Previous1MechanicalDelay <<= 1; break;
+			case 0x69: Previous1MechanicalDelay <<= 2; break;
+		}
+		if(Previous4CaptureCnt > Previous3CaptureCnt)
+		{
+			if(Previous4CaptureCnt - Previous3CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
 		}
 		else
-			Stablecnt += 1;
-	}
-	else
-	{
-		Stablecnt = 0;
-		SVPWMmode = 0;
+		{		
+			if(Previous3CaptureCnt - Previous4CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(Previous3CaptureCnt > Previous2CaptureCnt)
+		{
+			if(Previous3CaptureCnt - Previous2CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		else
+		{		
+			if(Previous2CaptureCnt - Previous3CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(Previous2CaptureCnt > Previous1CaptureCnt)
+		{
+			if(Previous2CaptureCnt - Previous1CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		else
+		{		
+			if(Previous1CaptureCnt - Previous2CaptureCnt > 200)
+			{
+				ripple = 1;
+			}
+		}
+		if(ripple)
+		{
+			UpdateSVPFreq(Previous1CaptureCnt);	
+		}
+		else
+		{
+			UpdateSVPFreq((Previous1CaptureCnt + Previous2CaptureCnt + Previous3CaptureCnt + Previous4CaptureCnt) >> 2);	
+		}
+	/*	if(Previous2MechanicalDelay < Previous1MechanicalDelay)
+		{
+			if(ElecAngleOffestCW < 255)
+			{
+				ElecAngleOffestCW ++;
+			}
+		}
+		else
+		{
+			if(ElecAngleOffestCW > 0)
+			{
+				ElecAngleOffestCW --;
+			}
+		}*/
+		SetSpeedRange_SVPrecision();
+		if((Previous1MechanicalDelay <= SpeedLowLimitforSVP) && ((Previous1MechanicalDelay >= Previous2MechanicalDelay - (Previous2MechanicalDelay >> SpeedRippleLimitforSVP)) && (Previous1MechanicalDelay <= Previous2MechanicalDelay + (Previous2MechanicalDelay >> SpeedRippleLimitforSVP))))
+		{
+			if(Stablecnt >= 4)
+			{
+				if(ENABLE_SVPWM_FOR_SYNCM)
+				{
+					SVPWMmode = 1;
+				}
+			}
+			else
+				Stablecnt += 1;
+		}
+		else
+		{
+			Stablecnt = 0;
+			SVPWMmode = 0;
+		}
 	}
 }
 
-void Timer3_Interr_ISR() interrupt 16 using 1 // Timer 3 for incrementing the driving angle in SVPWM condition
+void BLDC_SNSLess_StepXL() using 2
+{
+		//30DEG delay Counting Start
+		if(0)
+		{
+			if(CurrentElectricCycle<6)	CurrentElectricCycle+=1;
+			else		
+			{
+				CurrentElectricCycle = 1;
+			}
+		}
+		else
+		{ 
+			if(CurrentElectricCycle>1)	CurrentElectricCycle-=1;
+			else		
+			{
+				CurrentElectricCycle = 6;	
+			}
+		}
+}
+
+
+void ADC_PWM_FallEdge_BEMF_Dct() using 1
+{
+	ADCCON2 = 0x00;	//disable fault brake		
+	ADCCON1 = 0X03;		//PWM fallinmg Edge trig	
+	ADCCON0 &= 0X70;
+	if((CurrentElectricCycle == 1)||(CurrentElectricCycle == 2))
+	{
+		ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM0 trig
+	}
+	else 
+	{
+		if((CurrentElectricCycle == 3)||(CurrentElectricCycle == 4))
+			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM2 trig
+		else
+			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]);	// PWM4 trig
+	}
+	ADCDLY = 20;
+	CShunt_ADC_Interrupt = 0;
+	EADC = 1;
+}
+
+
+void BLDC_StartUP_OnProcCalc() using 2
+{
+	CurrentFrequency = 	STARTUP_FREQUENCY + (UsedStartupTime / (Accelerationtime / AccelerationFrequency ) ) ;
+	BLDC_SNSLess_PWM = STARTUP_PWM + (UsedStartupTime / (Accelerationtime / AccelerationPWM ) ) ;	
+	DelayMsBetweenCurrentElectricalCycle = 10000 /  CurrentFrequency;	
+	if(UsedStartupTime == 0)
+	{
+		UpdateBLDC_Dly(LOCK_POSITION_TIME * 125);			
+		BLDC_SNSLess_PWM = LOCK_POSITION_PWM;
+	}	
+	else 
+	{
+<<<<<<< Updated upstream
+		if(Stablecnt >= 4)
+=======
+		UpdateBLDC_Dly(DelayMsBetweenCurrentElectricalCycle * 12);
+	}  	
+	if((UsedStartupTime > Accelerationtime))
+	{
+		//startup_failed
+		BLDC_Sensorless_Status = BLDC_Run;			
+		T3CON &= 0XE7;		//Timer3 Stop
+		SetMotorSpin(150,1);
+		SetBLDCPWM(BLDC_SNSLess_PWM);		
+		
+		BLDC_SNSLess_StepXL();
+		SetElecCycleU2(CurrentElectricCycle);
+		UpdateBLDCInverter();	
+		if(BEMF_PWM_ON_Detect)
+>>>>>>> Stashed changes
+		{
+			ADC_CurrentShunt_Compare_Start();
+		}
+		else
+		{
+			ADC_PWM_FallEdge_BEMF_Dct();
+		}	
+	}
+	else
+		UsedStartupTime = UsedStartupTime + DelayMsBetweenCurrentElectricalCycle;	
+}
+
+void Timer3_Interr_ISR() interrupt 16 using 2
 {	
-	T3CON &= 0XEF;
-	if(SVPDriveAngle < 251)
-		SVPDriveAngle += SVPAngleStep;
-	else
-		SVPDriveAngle = 0;
-	CalcElectricAngle = SVPDriveAngle;
-	if(SVPWMmode)
-	{		
-			if(SVPReverseSpin)
-				CalcElectricAngle = 255 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+	T3CON &= 0XEF;	//clear timer interrupt
+	if(BLDC_SENSORLESS)
+	{	
+		SetBLDCPWM(BLDC_SNSLess_PWM);		
+		BLDC_SNSLess_StepXL();
+		if(BLDC_Sensorless_Status == BLDC_Run)
+		{
+			T3CON &= 0XE7;		//Timer3 Stop	
+		}
+		SetElecCycleU2(CurrentElectricCycle);
+		UpdateBLDCInverter();	
+		ADC_CurrentShunt_Compare_Start();
+		
+		//Calculate Startup Process
+		if(BLDC_Sensorless_Status == BLDC_Startup)
+		{
+			BLDC_StartUP_OnProcCalc();
+		}
 	}
+<<<<<<< Updated upstream
 	else
+=======
+	if(ENABLE_SVPWM_FOR_SYNCM)
+>>>>>>> Stashed changes
 	{
-		BLDCTimerEventHandler();
+		//These codes used only for SVPWM mode
+		if(SVPDriveAngle < 255-SVPAngleStep)
+			SVPDriveAngle += SVPAngleStep;
+		else
+		{
+			SVPDriveAngle = 0;
+			if(SVP_Angle_Delay < 255)
+				SVP_Angle_Delay++;
+		}
+		CalcElectricAngle = SVPDriveAngle;
+		if(SVPWMmode)
+		{		
+				if(SVPReverseSpin)
+					CalcElectricAngle = 255 - CalcElectricAngle;
+				CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+		}
 	}
 }
 
-void PWM_Interr_ISR() interrupt 13 using 2  // The PWM edge Triggering functions interrupt
+void PWM_Interr_ISR() interrupt 13 using 0
 {
 	PWMF = 0;
-	ADCCON0 |= 0X40;
 }
 
 
+<<<<<<< Updated upstream
+=======
+
+void ADC_Interrupt_ISR() interrupt 11 using 1
+{
+//	debug1 = 1;
+	EADC = 0;
+	ADCF = 0;
+	ADCCON1 = 0X01;		//Enable ADC and Start Converting immediately
+	
+//	debug1 = !debug1;
+	
+	if(CShunt_ADC_Interrupt)
+	{
+		Current_SENSE_ADC_Value  = (ADCRH << 4) + ADCRL;
+		//  BEMF_PWM_ON_Detect
+		if(BEMF_PWM_ON_Detect)
+		{
+			ADCCON0 &= 0X70;
+			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]) | 0x40;
+		}
+		else
+		{
+			ADC_PWM_FallEdge_BEMF_Dct();
+		}
+		//Start ADC for DC_Volt Detection
+		adcbemfreg0s = (0X03 + BEMF_DCT_Params[CurrentElectricCycle  - 1][BEMF_CH]) | 0x40 ;
+		if(Adc_Smpl_Count < 1)
+			Adc_Smpl_Count += 1;
+		else
+			Adc_Smpl_Count = 0;
+		adcalterreg0s = ADC_Sample_Sequence[Adc_Smpl_Count] | 0x40 ;
+		if(!BEMF_PWM_ON_Detect)
+		{
+			return;
+		}
+		while(ADCS);
+	}
+	DCBUS_ADC_Value = (ADCRH << 4) + ADCRL;
+	ADCCON0 &= 0X70;
+	ADCCON0 |= adcbemfreg0s;	//Start ADC for BEMF Detection
+	while(ADCS);
+	
+	BEMF_ADC_Value = (ADCRH << 4) + ADCRL;
+	ADCCON0 &= 0X70;
+	ADCCON0 |= adcalterreg0s;	//Start ADC for Alternate Detection
+	bcrtnv = BEMF_Calculate(CurrentElectricCycle,DCBUS_ADC_Value,BEMF_ADC_Value,BEMF_PWM_ON_Detect);
+	while(ADCS);
+	
+	if((bcrtnv == CurrentElectricCycle)&&(BLDC_Sensorless_Status == BLDC_Run))
+	{		
+		SetBLDCPWM(BLDC_SNSLess_PWM);		
+		BLDC_SNSLess_StepXL();
+		SetElecCycleU2(CurrentElectricCycle);
+		UpdateBLDCInverter();	
+	}
+	ADC_CurrentShunt_Compare_Start();
+//	debug1 = 0;
+}
+
+void Set_Currrent_Limit_Threshold(unsigned int th)
+{
+	ADCMPH = th >> 8; //current limit
+	ADCMPL = th & 0xff;;
+}
+
+>>>>>>> Stashed changes
 void ADCInit()
 {
-	ADCCON0 = 0X04;
-	ADCCON1 = 0X07;
-	ADCMPH = 0X19;
-	ADCMPL = 0x00;
-	ADCDLY = 28;
-	ADCCON2 = 0xa0;
+	Set_Currrent_Limit_Threshold(0xfff);
+	ADC_CurrentShunt_Compare_Start();
+	EADC = 1;
+}
+
+void BLDC_SNSless_Parms_Calc()
+{
+	Accelerationtime = ACCELERATION_TIME * 10;
+	AccelerationFrequency = STARTUP_END_FREQUENCY - STARTUP_FREQUENCY;
+	AccelerationPWM	 = STARTUP_END_PWM - STARTUP_PWM ;
 }
 
 void main(void)
 {
 	unsigned int i;
 //	UartInit();
+<<<<<<< Updated upstream
 //  ES = 1;
 //  EA = 1;
 	Inverter_ControlGPIO_Init();
@@ -345,10 +765,25 @@ void main(void)
 	ADCInit();
 	SetMotorSpin(0,1);
 	TimerInit();
+=======
+	Inverter_ControlGPIO_Init();
+	HallGpioInit();
+	BEMF_Gpio_ADCIN_Init();
+	ADCInit();
+	SetMotorSpin(130,1);
+	TimerInit();
+	BLDC_SNSless_Parms_Calc();
+	
+	BLDC_Sensorless_Status = BLDC_Startup;
+	
+	UpdateBLDC_Dly(418);
+	
+>>>>>>> Stashed changes
 //	PWM_Interrupu_Init();
 	
-	P0M1 &= 0xfb;
-	P0M2 |= 0x04;
+	
+	P0M1 &= 0x7f;
+	P0M2 |= 0x80;
 		
 	P1M1 &= 0Xb0;
 	P1M2 &= 0Xb0;	
@@ -358,14 +793,23 @@ void main(void)
 //  UartSendStr("DAS02418");
 	while(1)
 	{
+<<<<<<< Updated upstream
 		for(i = 0;i < 255;i += 1)
+=======
+		for(i = 0;i < 254;i += 1)
+>>>>>>> Stashed changes
 		{	
 			
 	//	BLDCTimerEventHandler();
 	//		UpdateBLDCInverter(i);
+<<<<<<< Updated upstream
 			delay(3000);
 
 	//	CalculateInverterVectorsWidth_Polar(i);
+=======
+
+			//CalculateInverterVectorsWidth_Polar(i);
+>>>>>>> Stashed changes
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");

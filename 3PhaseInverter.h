@@ -1,6 +1,6 @@
 #include <N76E003.h>
 
-#define DEADTIME 14
+#define DEADTIME 6
 
 void Inverter_ControlGPIO_Init();
 void TurnOFFALLSwitches();
