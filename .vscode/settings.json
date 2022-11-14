@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "3phaseinverter.h": "c",
+        "bldc with hall.h": "c",
+        "bldc_sensorless.h": "c",
+        "n76e003.h": "c"
+    }
+}

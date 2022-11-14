@@ -1,4 +1,5 @@
-#include <N76E003.H>
+#include "N76E003.h"
+#include <stdint.h>
 #include "BLDC with Hall.h"
 #include "3PhaseInverter.h"
 

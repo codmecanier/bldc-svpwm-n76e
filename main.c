@@ -1,42 +1,51 @@
-#include <N76E003.h>
-#include <SVPWM.h>
-#include <3PhaseInverter.h>
-#include <BLDC with Hall.h>
-#include <BLDC_Sensorless.h>
-#include "intrins.h"
+#include "N76E003.h"
+#include "SVPWM.h"
+#include "3PhaseInverter.h"
+#include "BLDC with Hall.h"
+#include "BLDC_Sensorless.h"
+#include "mc_config.h"
+#include <intrins.h>
 #include <stdint.h>
 //#include "NTC.c"
 
 uint8_t xdata StartUP_Process = 0;
 
-uint8_t xdata	STARTUP_FREQUENCY = 10;
-uint8_t xdata	STARTUP_END_FREQUENCY = 70;
-uint8_t xdata	STARTUP_PWM =	23;
-uint8_t xdata	STARTUP_END_PWM = 50;
-uint16_t xdata ACCELERATION_TIME = 1000;
-uint16_t xdata LOCK_POSITION_TIME = 500	;  
-uint16_t xdata LOCK_POSITION_PWM = 26	;  
-uint16_t xdata DIREACTION_CHANGE_DELAY = 400;	
+#ifdef CFG_BLDC_SENSORLESS
+// BLDC Sensorless setting regions
+uint8_t xdata STARTUP_FREQUENCY = DEFAULT_STARTUP_FREQUENCY;
+uint8_t xdata STARTUP_END_FREQUENCY = DEFAULT_STARTUP_END_FREQUENCY;
+uint8_t xdata STARTUP_PWM =	DEFAULT_STARTUP_PWM;
+uint8_t xdata STARTUP_END_PWM = DEFAULT_STARTUP_END_PWM;
+uint16_t xdata ACCELERATION_TIME = DEFAULT_ACCELERATION_TIME;
+uint16_t xdata LOCK_POSITION_TIME = DEFAULT_LOCK_POSITION_TIME	;  
+uint16_t xdata LOCK_POSITION_PWM = DEFAULT_LOCK_POSITION_PWM	;  
+uint16_t xdata DIREACTION_CHANGE_DELAY = DEFAULT_DIREACTION_CHANGE_DELAY;
 
-uint16_t xdata MAX_FREQUENCY = 4000;
-uint16_t xdata MIN_FREQUENCY = 1;
+volatile bit BEMF_PWM_ON_Detect = 1;
+#endif
+
+#ifdef CFG_ACIM  //异步电机配置区
+uint16_t xdata MAX_FREQUENCY = DEFAULT_VVVF_MAX_FREQUENCY;
+uint16_t xdata MIN_FREQUENCY = DEFAULT_VVVF_MIN_FREQUENCY;
 uint16_t xdata Current_Frequency = 0;
-uint16_t xdata FREQUENCY_SECTION_CUT = 0;
-uint16_t xdata VF_RATIO_1 = 3;
-uint16_t xdata VF_RATIO_2 = 3;
+uint16_t xdata FREQUENCY_SECTION_CUT = DEFAULT_VVVF_FREQUENCY_SECTION_CUT;
+uint16_t xdata VF_RATIO_1 = DEFAULT_VVVF_RATIO_1;
+uint16_t xdata VF_RATIO_2 = DEFAULT_VVVF_RATIO_2;
 uint16_t xdata REFERENCE_DC_VOLT = 0;
-uint16_t xdata VF_ACCELERATION_HZS2 = 1000;
-uint16_t xdata VF_DECELERATION_HZS2 = 1000;
+uint16_t xdata VF_ACCELERATION_HZS2 = DEFAULT_VVVF_ACCELERATION_HZS2;
+uint16_t xdata VF_DECELERATION_HZS2 = DEFAULT_VVVF_DECELERATION_HZS2;
+#endif
 
+#ifdef CFG_ENABLE_SVPWM
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
-bit BLDC_SENSORLESS = 1;
-bit ASYNC_3_PHASE = 1;
-
 bit SVPWMmode = 1;
 bit SVPReverseSpin = 1;
-volatile bit BEMF_PWM_ON_Detect = 1;
+#endif
+
+bit BLDC_SENSORLESS = 1;
+bit ASYNC_3_PHASE = 1;
 
 volatile bit data CShunt_ADC_Interrupt = 0;
 
@@ -52,9 +61,9 @@ unsigned long xdata  CurrentFrequency = 0;
 uint8_t pdata BLDC_SNSLess_PWM = 0;
 uint8_t adcbemfreg0s,adcalterreg0s,bcrtnv = 0;
 
-uint8_t pdata ElecAngleOffestCCW = 189;
-uint8_t pdata StableCount = 10;
-uint8_t pdata ElecAngleOffestCW = 215; // 238wm // 222
+uint8_t pdata ElecAngleOffestCCW = DEFAULT_ELEC_ANGLE_OFFSET_CCW;
+uint8_t pdata StableCount = DEFAULT_STABLE_COUNT_PERIOD;
+uint8_t pdata ElecAngleOffestCW = DEFAULT_ELEC_ANGLE_OFFSET_CW; // 238wm // 222
 uint8_t pdata SVPAngleStep = 1;
 uint8_t pdata SVPNextAngleStep = 1;
 uint8_t pdata SpeedRippleLimitforSVP = 2;
@@ -97,6 +106,9 @@ void delay(uint16_t i)
 {
 	while(i--);
 }
+
+
+#ifdef CFG_BLDC_SENSORLESS
 const uint8_t BEMF_DCT_Params[6][3] = {
 	{0,2,0},
 	{0,1,1},
@@ -105,6 +117,7 @@ const uint8_t BEMF_DCT_Params[6][3] = {
 	{2,1,0},
 	{2,0,1},
 };
+#endif
 
 const uint8_t ADC_Sample_Sequence[]=
 {
