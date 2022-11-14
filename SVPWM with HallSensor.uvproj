@@ -149,7 +149,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>11</TargetSelection>
+          <TargetSelection>10</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -415,6 +415,26 @@
               <FileName>BLDC with Hall.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\BLDC with Hall.h</FilePath>
+            </File>
+            <File>
+              <FileName>BLDC_Sensorless.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BLDC_Sensorless.c</FilePath>
+            </File>
+            <File>
+              <FileName>BLDC_Sensorless.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BLDC_Sensorless.h</FilePath>
+            </File>
+            <File>
+              <FileName>NTC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\NTC.c</FilePath>
+            </File>
+            <File>
+              <FileName>NTC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\NTC.h</FilePath>
             </File>
           </Files>
         </Group>

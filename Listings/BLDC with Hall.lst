@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    03/02/2019 14:43:25 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    02/23/2019 10:47:23 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_WITH_HALL
@@ -8,7 +8,7 @@ COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BLDC with Hall.c OPTIMIZE(8,SPEE
 
 line level    source
 
-   1          #include <N76E003.H>
+   1          #include <N76E003.h>
    2          #include "BLDC with Hall.h"
    3          #include "3PhaseInverter.h"
    4          
@@ -16,268 +16,225 @@ line level    source
    6          bit HA,HB,HC;
    7          bit Hall_Mode_60deg = 1;
    8          
-   9          sbit P13 = P1^3;
-  10          sbit P14 = P1^4;
-  11          sbit P15 = P1^5;
-  12          
-  13          unsigned char BLDCSpeed;
-  14          unsigned char eleccycle = 0;
-  15          
-  16          static unsigned char BLDC_Previous_Cycle = 0;
-  17          
-  18          void SetBLDCDirPWM(unsigned char pwm, bit dir)
-  19          {
-  20   1        BLDCReverse = dir;
-  21   1        BLDCSpeed = pwm;
-  22   1      }
-  23          
-  24          void SetElecCycleU2(unsigned char i) using 2
-  25          {
-  26   1        eleccycle = i;
-  27   1      }
-  28          
-  29          void SetElecCycleU3(unsigned char i) using 3
-  30          {
-  31   1        eleccycle = i;
-  32   1      }
-  33          
-  34          void SetBLDCPWM(unsigned char pwm) using 2
-  35          {
-  36   1        BLDCSpeed = pwm;
-  37   1      }
-  38          
-  39          bit GetBLDCDirection()
-  40          {return BLDCReverse;}
-  41          
-  42          unsigned char GetBLDCDirectionU3() using 3
-  43          {return BLDCReverse;}
-  44          
-  45          void UpdateHall() using 2
-  46          { 
-  47   1        HA = HAPort;
-  48   1        HB = HBPort;
-  49   1        HC = HCPort;
-  50   1      }
-  51          
-  52          void HallGpioInit()
-  53          {
-  54   1        P1M1 &= 0XC7;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    03/02/2019 14:43:25 PAGE 2   
+   9          unsigned char BLDCSpeed;
+  10          
+  11          void SetBLDCDirPWM(unsigned char pwm, bit dir)
+  12          {
+  13   1        BLDCReverse = dir;
+  14   1        BLDCSpeed = pwm;
+  15   1      }
+  16          
+  17          bit GetBLDCDirection()
+  18          {return BLDCReverse;}
+  19          
+  20          void UpdateHall() using 2
+  21          { 
+  22   1        HA = HAPort;
+*** ERROR C202 IN LINE 22 OF BLDC with Hall.c: 'P15': undefined identifier
+  23   1        HB = HBPort;
+*** ERROR C202 IN LINE 23 OF BLDC with Hall.c: 'P13': undefined identifier
+  24   1        HC = HCPort;
+*** ERROR C202 IN LINE 24 OF BLDC with Hall.c: 'P14': undefined identifier
+  25   1      }
+  26          
+  27          void HallGpioInit()
+  28          {
+  29   1        P1M1 &= 0XC7;
+  30   1        P1M2 &= 0XC7; 
+  31   1        TA = 0X0AA;
+  32   1        TA = 0X55;
+  33   1        SFRS = 1;
+  34   1        P1S |= 0X18;
+  35   1        TA = 0X0AA;
+  36   1        TA = 0X55;
+  37   1        SFRS = 0;
+  38   1        HAPort = 1;
+*** ERROR C202 IN LINE 38 OF BLDC with Hall.c: 'P15': undefined identifier
+  39   1        HBPort = 1;
+*** ERROR C202 IN LINE 39 OF BLDC with Hall.c: 'P13': undefined identifier
+  40   1        HCPort = 1;
+*** ERROR C202 IN LINE 40 OF BLDC with Hall.c: 'P14': undefined identifier
+  41   1      }
+  42          
+  43          unsigned char DetermineCurrentElecCycle(bit reverse) using 1
+  44          { 
+  45   1        if(HAPort)
+*** ERROR C202 IN LINE 45 OF BLDC with Hall.c: 'P15': undefined identifier
+  46   1        {
+  47   2          if(Hall_Mode_60deg ^ HBPort)
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    02/23/2019 10:47:23 PAGE 2   
 
-  55   1        P1M2 &= 0XC7; 
-  56   1        TA = 0X0AA;
-  57   1        TA = 0X55;
-  58   1        SFRS = 1;
-  59   1        P1S |= 0X18;
-  60   1        TA = 0X0AA;
-  61   1        TA = 0X55;
-  62   1        SFRS = 0;
-  63   1        HAPort = 1;
-  64   1        HBPort = 1;
-  65   1        HCPort = 1;
-  66   1      }
-  67          
-  68          unsigned char DetermineCurrentElecCycle(bit reverse) using 3
-  69          { 
-  70   1        if(HAPort)
-  71   1        {
-  72   2          if(Hall_Mode_60deg ^ HBPort)
-  73   2          {
-  74   3            if(HCPort)
-  75   3            {
-  76   4              if(reverse)
-  77   4                return 5;
-  78   4              else
-  79   4                return 3;   
-  80   4            }
-  81   3            else
-  82   3            {
-  83   4              if(reverse)
-  84   4                return 4;
-  85   4              else
-  86   4                return 2;
-  87   4            }
-  88   3          }
-  89   2          else
-  90   2          {
-  91   3            if(HCPort)
-  92   3            {
-  93   4              return 0;   //error
-  94   4            }
-  95   3            else
-  96   3            {
-  97   4              if(reverse)
-  98   4                return 3;
-  99   4              else
+*** ERROR C202 IN LINE 47 OF BLDC with Hall.c: 'P13': undefined identifier
+  48   2          {
+  49   3            if(HCPort)
+*** ERROR C202 IN LINE 49 OF BLDC with Hall.c: 'P14': undefined identifier
+  50   3            {
+  51   4              if(reverse)
+  52   4                return 5;
+  53   4              else
+  54   4                return 3;   
+  55   4            }
+  56   3            else
+  57   3            {
+  58   4              if(reverse)
+  59   4                return 4;
+  60   4              else
+  61   4                return 2;
+  62   4            }
+  63   3          }
+  64   2          else
+  65   2          {
+  66   3            if(HCPort)
+*** ERROR C202 IN LINE 66 OF BLDC with Hall.c: 'P14': undefined identifier
+  67   3            {
+  68   4              return 0;   //error
+  69   4            }
+  70   3            else
+  71   3            {
+  72   4              if(reverse)
+  73   4                return 3;
+  74   4              else
+  75   4                return 1;
+  76   4            }
+  77   3          }
+  78   2        }
+  79   1        else
+  80   1        {
+  81   2          if(Hall_Mode_60deg ^ HBPort)
+*** ERROR C202 IN LINE 81 OF BLDC with Hall.c: 'P13': undefined identifier
+  82   2          {
+  83   3            if(HCPort)
+*** ERROR C202 IN LINE 83 OF BLDC with Hall.c: 'P14': undefined identifier
+  84   3            {
+  85   4              if(reverse)
+  86   4                return 6;
+  87   4              else
+  88   4                return 4;
+  89   4            }
+  90   3            else
+  91   3            {
+  92   4              return 0; //error
+  93   4            }
+  94   3          }
+  95   2          else
+  96   2          {
+  97   3            if(HCPort)
+*** ERROR C202 IN LINE 97 OF BLDC with Hall.c: 'P14': undefined identifier
+  98   3            {
+  99   4              if(reverse)
  100   4                return 1;
- 101   4            }
- 102   3          }
- 103   2        }
- 104   1        else
- 105   1        {
- 106   2          if(Hall_Mode_60deg ^ HBPort)
- 107   2          {
- 108   3            if(HCPort)
- 109   3            {
- 110   4              if(reverse)
- 111   4                return 6;
- 112   4              else
- 113   4                return 4;
- 114   4            }
- 115   3            else
- 116   3            {
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    03/02/2019 14:43:25 PAGE 3   
+ 101   4              else
+ 102   4                return 5;     
+ 103   4            }
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    02/23/2019 10:47:23 PAGE 3   
 
- 117   4              return 0; //error
- 118   4            }
- 119   3          }
- 120   2          else
- 121   2          {
- 122   3            if(HCPort)
- 123   3            {
- 124   4              if(reverse)
- 125   4                return 1;
- 126   4              else
- 127   4                return 5;     
- 128   4            }
- 129   3            else
- 130   3            {
- 131   4              if(reverse)
- 132   4                return 2;
- 133   4              else
- 134   4                return 6; 
- 135   4            }
- 136   3          }
- 137   2        }
- 138   1        return 0;
- 139   1      }
- 140          
- 141          void UpdateBLDCInverter() using 3
- 142          {
- 143   1        if(BLDC_Previous_Cycle!= eleccycle)
- 144   1        {
- 145   2          EA = 0;
- 146   2          switch(eleccycle)
- 147   2          {
- 148   3            case 1: {     
- 149   4              PMEN = 0X30;
- 150   4              PWM0L = BLDCSpeed;
- 151   4              PWM2L = 0;
- 152   4              PWMCON0 |= 0X40;
- 153   4              TA = 0X0AA;
- 154   4              TA = 0X55;
- 155   4              SFRS = 1;
- 156   4              PWMINTC=0X10;
- 157   4              TA = 0X0AA;
- 158   4              TA = 0X55;
- 159   4              SFRS = 0;
- 160   4              break;
- 161   4            }
- 162   3            case 2: {
- 163   4              PMEN = 0X0C;
- 164   4              PWM0L = BLDCSpeed;
- 165   4              TA = 0X0AA;
- 166   4              TA = 0X55;
- 167   4              SFRS = 1;
- 168   4              PWM4L = 0;
- 169   4              PWMINTC=0X10;
- 170   4              TA = 0X0AA;
- 171   4              TA = 0X55;
- 172   4              SFRS = 0;
- 173   4              PWMCON0 |= 0X40;
- 174   4              break;
- 175   4            }
- 176   3            case 3: {
- 177   4              PMEN = 0X03;
- 178   4              PWM2L = BLDCSpeed;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    03/02/2019 14:43:25 PAGE 4   
+ 104   3            else
+ 105   3            {
+ 106   4              if(reverse)
+ 107   4                return 2;
+ 108   4              else
+ 109   4                return 6; 
+ 110   4            }
+ 111   3          }
+ 112   2        }
+ 113   1        return 0;
+ 114   1      }
+ 115          
+ 116          void UpdateBLDCInverter(unsigned char eleccycle) using 1
+ 117          {
+ 118   1        EA = 0;
+ 119   1        switch(eleccycle)
+ 120   1        {
+ 121   2          case 1: {     
+ 122   3            PMEN = 0X30;
+ 123   3            PWM0L = BLDCSpeed;
+ 124   3            PWM2L = 0;
+ 125   3            PWMCON0 |= 0X40;
+ 126   3            TA = 0X0AA;
+ 127   3            TA = 0X55;
+ 128   3            SFRS = 1;
+ 129   3            PWMINTC=0X10;
+ 130   3            TA = 0X0AA;
+ 131   3            TA = 0X55;
+ 132   3            SFRS = 0;
+ 133   3            break;
+ 134   3          }
+ 135   2          case 2: {
+ 136   3            PMEN = 0X0C;
+ 137   3            PWM0L = BLDCSpeed;
+ 138   3            TA = 0X0AA;
+ 139   3            TA = 0X55;
+ 140   3            SFRS = 1;
+ 141   3            PWM4L = 0;
+ 142   3            PWMINTC=0X10;
+ 143   3            TA = 0X0AA;
+ 144   3            TA = 0X55;
+ 145   3            SFRS = 0;
+ 146   3            PWMCON0 |= 0X40;
+ 147   3            break;
+ 148   3          }
+ 149   2          case 3: {
+ 150   3            PMEN = 0X03;
+ 151   3            PWM2L = BLDCSpeed;
+ 152   3            TA = 0X0AA;
+ 153   3            TA = 0X55;
+ 154   3            SFRS = 1;
+ 155   3            PWM4L = 0;
+ 156   3            PWMINTC=0X12;
+ 157   3            TA = 0X0AA;
+ 158   3            TA = 0X55;
+ 159   3            SFRS = 0;
+ 160   3            PWMCON0 |= 0X40;
+ 161   3            break;
+ 162   3          }
+ 163   2          case 4: {     
+ 164   3            PMEN = 0X30;
+ 165   3            PWM2L = BLDCSpeed;
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    02/23/2019 10:47:23 PAGE 4   
 
- 179   4              TA = 0X0AA;
- 180   4              TA = 0X55;
- 181   4              SFRS = 1;
- 182   4              PWM4L = 0;
- 183   4              PWMINTC=0X12;
- 184   4              TA = 0X0AA;
- 185   4              TA = 0X55;
- 186   4              SFRS = 0;
- 187   4              PWMCON0 |= 0X40;
- 188   4              break;
- 189   4            }
- 190   3            case 4: {     
- 191   4              PMEN = 0X30;
- 192   4              PWM2L = BLDCSpeed;
- 193   4              TA = 0X0AA;
- 194   4              TA = 0X55;
- 195   4              SFRS = 1;
- 196   4              PWMINTC=0X12;
- 197   4              TA = 0X0AA;
- 198   4              TA = 0X55;
- 199   4              SFRS = 0;
- 200   4              PWM0L = 0;
- 201   4              PWMCON0 |= 0X40;
- 202   4              break;
- 203   4            }
- 204   3            case 5: {
- 205   4              PMEN = 0X0C;
- 206   4              TA = 0X0AA;
- 207   4              TA = 0X55;
- 208   4              SFRS = 1;
- 209   4              PWM4L = BLDCSpeed;
- 210   4              PWMINTC=0X14;
- 211   4              TA = 0X0AA;
- 212   4              TA = 0X55;
- 213   4              SFRS = 0;
- 214   4              PWM0L = 0;
- 215   4              PWMCON0 |= 0X40;
- 216   4              break;
- 217   4            }
- 218   3            case 6: {
- 219   4              PMEN = 0X03;
- 220   4              TA = 0X0AA;
- 221   4              TA = 0X55;
- 222   4              SFRS = 1;
- 223   4              PWM4L = BLDCSpeed;    
- 224   4              PWMINTC=0X14;
- 225   4              TA = 0X0AA;
- 226   4              TA = 0X55;
- 227   4              SFRS = 0;
- 228   4              PWM2L = 0;
- 229   4              PWMCON0 |= 0X40;
- 230   4              break;
- 231   4            }
- 232   3            case 0:
- 233   3              break;
- 234   3          }
- 235   2          ADCCON0 &= 0XCF;
- 236   2          if((eleccycle == 1)||(eleccycle == 2))
- 237   2          {
- 238   3            ADCCON0 |= 0X00;  // PWM0 trig
- 239   3          }
- 240   2          else if((eleccycle == 3)||(eleccycle == 4))
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    03/02/2019 14:43:25 PAGE 5   
+ 166   3            TA = 0X0AA;
+ 167   3            TA = 0X55;
+ 168   3            SFRS = 1;
+ 169   3            PWMINTC=0X12;
+ 170   3            TA = 0X0AA;
+ 171   3            TA = 0X55;
+ 172   3            SFRS = 0;
+ 173   3            PWM0L = 0;
+ 174   3            PWMCON0 |= 0X40;
+ 175   3            break;
+ 176   3          }
+ 177   2          case 5: {
+ 178   3            PMEN = 0X0C;
+ 179   3            TA = 0X0AA;
+ 180   3            TA = 0X55;
+ 181   3            SFRS = 1;
+ 182   3            PWM4L = BLDCSpeed;
+ 183   3            PWMINTC=0X14;
+ 184   3            TA = 0X0AA;
+ 185   3            TA = 0X55;
+ 186   3            SFRS = 0;
+ 187   3            PWM0L = 0;
+ 188   3            PWMCON0 |= 0X40;
+ 189   3            break;
+ 190   3          }
+ 191   2          case 6: {
+ 192   3            PMEN = 0X03;
+ 193   3            TA = 0X0AA;
+ 194   3            TA = 0X55;
+ 195   3            SFRS = 1;
+ 196   3            PWM4L = BLDCSpeed;    
+ 197   3            PWMINTC=0X14;
+ 198   3            TA = 0X0AA;
+ 199   3            TA = 0X55;
+ 200   3            SFRS = 0;
+ 201   3            PWM2L = 0;
+ 202   3            PWMCON0 |= 0X40;
+ 203   3            break;
+ 204   3          }
+ 205   2          case 0:
+ 206   2            break;
+ 207   2        }
+ 208   1        EA = 1;
+ 209   1      } 
 
- 241   2          {
- 242   3            ADCCON0 |= 0X10;  // PWM2 trig
- 243   3          }
- 244   2          else
- 245   2          {
- 246   3            ADCCON0 |= 0X20;  // PWM4 trig
- 247   3          }
- 248   2          EA = 1;
- 249   2          BLDC_Previous_Cycle= eleccycle;
- 250   2        }
- 251   1      } 
-
-
-MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    471    ----
-   CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----    ----
-   DATA SIZE        =      3    ----
-   IDATA SIZE       =   ----    ----
-   BIT SIZE         =      5       2
-END OF MODULE INFORMATION.
-
-
-C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  13 ERROR(S)

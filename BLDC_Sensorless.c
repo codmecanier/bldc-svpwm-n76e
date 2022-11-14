@@ -1,108 +1,129 @@
 #include <N76E003.h>
 #include <BLDC_Sensorless.h>
 
-#define MagDecayPulseDct 3		//Magnent Decay Detect threshold
-#define MagDecayPulseCnt 4		//Maagnent Decay Detect Count
-
-#define PhaseSwitchCount 5
-
 unsigned int DCBUS_Voltage = 0;
 
-unsigned int data Phase_UVW_Voltage_ADC_Value[3];
 
-const unsigned char BEMF_DCT_Params[6][3] = {
-	{0,2,0},
-	{0,1,1},
-	{1,0,0},
-	{1,2,1},
-	{2,1,0},
-	{2,0,1},
-};
+unsigned int Phase_U_Voltage_ADC_Value;
+unsigned int Phase_V_Voltage_ADC_Value;
+unsigned int Phase_W_Voltage_ADC_Value;
 
-#define DC_CH 0
-#define BEMF_CH 1
-#define SLOPE 2
 
-unsigned char data PreviousBEMF_CH;
-unsigned char data PrevoiusBEMF_Value;
-unsigned char data BEMF_Slope_Count;
-
-void Set_Phase_U_Voltage_ADC_Value(unsigned int i) using 1
+void Set_Phase_U_Voltage_ADC_Value(unsigned int i)
 {
-	Phase_UVW_Voltage_ADC_Value[0] = i;
+	Phase_U_Voltage_ADC_Value = i;
 }
-void Set_Phase_V_Voltage_ADC_Value(unsigned int i) using 1
+void Set_Phase_V_Voltage_ADC_Value(unsigned int i)
 {
-	Phase_UVW_Voltage_ADC_Value[1] = i;
+	Phase_V_Voltage_ADC_Value = i;
 }
-void Set_Phase_W_Voltage_ADC_Value(unsigned int i) using 1
+void Set_Phase_W_Voltage_ADC_Value(unsigned int i)
 {
-	Phase_UVW_Voltage_ADC_Value[2] = i;
+	Phase_W_Voltage_ADC_Value = i;
 }
 
-void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times, bit pwm_on_sense) using 1
+void BEMF_ReadVoltage(unsigned char phase) using 3
 {
-	if(pwm_on_sense)
-		ADCCON1 = 0X01;
-	else
-		ADCCON1 = 0X03;
-	ADCCON0 &= 0XF0;
-	eleccycle -= 1;
-	if(times == 1)
-		ADCCON0 |= 0X03 + BEMF_DCT_Params[eleccycle][DC_CH];
-	else
-		ADCCON0 |= 0X03 + BEMF_DCT_Params[eleccycle][BEMF_CH];
+	switch(phase)
+	{
+		case 1: ADCCON0 = 0X05; break;
+		case 2: ADCCON0 = 0X04; break;
+		case 3: ADCCON0 = 0X03; break;
+	}
+	ADCCON1 = 0X01;////
 	ADCDLY = 0;
 	ADCCON2 = 0x00;
-	if(pwm_on_sense)
-		ADCCON0 |= 0X40;	//start adc
-}	
-
-
-unsigned char BEMF_Calculate(unsigned char eleccycle) using 1
-{	
-	bit bemf_cmp = 0;
-	eleccycle -= 1;	
-	if(PreviousBEMF_CH == eleccycle)
-	{
-		DCBUS_Voltage = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][DC_CH]];
-		if(BEMF_DCT_Params[eleccycle][SLOPE])
-		{
-			bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> 1);
-			if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] < (DCBUS_Voltage >> MagDecayPulseDct))
-				BEMF_Slope_Count = 0;
-		}
-		else
-		{
-			bemf_cmp = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage >> 1);	
-			if(Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]] > (DCBUS_Voltage - (DCBUS_Voltage >> MagDecayPulseDct)))
-				BEMF_Slope_Count = 0;
-		}
-		if(!bemf_cmp && (BEMF_Slope_Count <= (MagDecayPulseCnt >> 1)))
-			BEMF_Slope_Count++;
-		if(bemf_cmp && (BEMF_Slope_Count >= (MagDecayPulseCnt >> 1)) && (BEMF_Slope_Count <= MagDecayPulseCnt))
-			BEMF_Slope_Count++;
-		PrevoiusBEMF_Value = Phase_UVW_Voltage_ADC_Value[BEMF_DCT_Params[eleccycle][BEMF_CH]];	
-		if(bemf_cmp)
-		if((BEMF_Slope_Count >= MagDecayPulseCnt) && bemf_cmp)
-		{
-	//		P07 = 1;
-			return 1;
-		}
-	}
-	else
-	{	
-		BEMF_Slope_Count = 0;
-		
-		PreviousBEMF_CH = eleccycle;
-	}
-//	P07 = 0;
-	return 0;
+	ADCCON0 |= 0X40;	//start adc
 }
+
+void Determine_BEMF_Detect_Channel(unsigned char eleccycle, unsigned char times) using 3
+{
+	bit bemf_cmp = 0;
+
+	switch(eleccycle)
+	{
+		case 1: {		
+			switch(times)
+			{
+				case 1: BEMF_ReadVoltage(1); break;
+				case 2:	BEMF_ReadVoltage(3); break;
+				case 3:	
+					DCBUS_Voltage = Phase_U_Voltage_ADC_Value;
+					bemf_cmp = Phase_W_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//AB c decrease  
+		}
+		case 2: {
+			switch(times)
+			{
+				case 1: BEMF_ReadVoltage(1); break;
+				case 2:	BEMF_ReadVoltage(2); break;
+				case 3:	
+					DCBUS_Voltage = Phase_U_Voltage_ADC_Value;
+					bemf_cmp = Phase_V_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//AC b increase
+		}
+		case 3: {
+			switch(times)
+			{
+				case 1: BEMF_ReadVoltage(2); break;
+				case 2:	BEMF_ReadVoltage(3); break;
+				case 3:	
+					DCBUS_Voltage = Phase_V_Voltage_ADC_Value;
+					bemf_cmp = Phase_U_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//BC a decrease
+		}
+		case 4: {	
+			switch(times)
+			{
+				case 1: BEMF_ReadVoltage(2); break;
+				case 2:	BEMF_ReadVoltage(1); break;
+				case 3:	
+					DCBUS_Voltage = Phase_V_Voltage_ADC_Value;
+					bemf_cmp = Phase_W_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//BA c increase
+		}
+		case 5: {
+			switch(times)
+			{
+				case 1: BEMF_ReadVoltage(3); break;
+				case 2:	BEMF_ReadVoltage(1); break;
+				case 3:	
+					DCBUS_Voltage = Phase_W_Voltage_ADC_Value;
+					bemf_cmp = Phase_V_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//CA b decrease
+		}
+		case 6: {
+			switch(times)				
+			{
+				case 1: BEMF_ReadVoltage(3); break;
+				case 2:	BEMF_ReadVoltage(1); break;
+				case 3:	
+					DCBUS_Voltage = Phase_W_Voltage_ADC_Value;
+					bemf_cmp = Phase_U_Voltage_ADC_Value < (DCBUS_Voltage >> 1);
+					break;
+			}
+				break;	//CB a increase
+		}
+		case 0:
+			break;
+	}
+	if(times == 3)
+	P07 = bemf_cmp;
+}	
 
 void BEMF_Gpio_ADCIN_Init()
 {
 	P0M1 |= 0x70;
 	P0M2 &= 0x8f;
-	AINDIDS  |= 0x3E;
+	AINDIDS  |= 0x38;
 }
