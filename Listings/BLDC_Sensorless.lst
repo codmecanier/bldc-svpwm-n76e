@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:51:47 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:48:28 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_SENSORLESS
@@ -62,7 +62,7 @@ line level    source
   52            bit bemf_cmp = 0;
   53            unsigned char eleci;
   54            eleccycle -= 1; 
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:51:47 PAGE 2   
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:48:28 PAGE 2   
 
   55            if(PreviousBEMF_CH == eleccycle)
   56            {
@@ -126,7 +126,7 @@ line level    source
  106          //    P07 = !P07;
  107              PreviousBEMF_CH = eleccycle;
  108            }
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:51:47 PAGE 3   
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:48:28 PAGE 3   
 
  109          //  P07 = 0;
  110            return 0;
@@ -190,7 +190,7 @@ line level    source
  167   2      //    P07 = !P07;
  168   2          PreviousBEMF_CH = eleccycle;
  169   2          Period_Count = Switch_Count;
-C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:51:47 PAGE 4   
+C51 COMPILER V9.59.0.0   BLDC_SENSORLESS                                                   03/16/2019 10:48:28 PAGE 4   
 
  170   2          Switch_Count = 0;
  171   2        }

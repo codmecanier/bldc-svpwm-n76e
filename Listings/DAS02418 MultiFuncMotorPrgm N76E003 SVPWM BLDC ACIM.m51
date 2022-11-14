@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    03/16/2019  10:51:47  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    03/16/2019  10:48:28  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
@@ -59,7 +59,7 @@ LINK MAP OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC AC
             DATA    0060H     000CH     UNIT         ?DT?SVPWM
             DATA    006CH     0004H     UNIT         ?DT?_GET_TEMPERATURE?NTC
             DATA    0070H     0004H     UNIT         ?DT?LOG?LOG
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 2
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 2
 
 
             DATA    0074H     0003H     UNIT         ?DT?BLDC_WITH_HALL
@@ -119,7 +119,7 @@ LINK MAP OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC AC
             CODE    17E1H     0048H     UNIT         ?PR?_SETSVPWMVALUE?SVPWM
             CODE    1829H     0043H     UNIT         ?PR?MAIN?MAIN
             CODE    186CH     003CH     UNIT         ?PR?BLDC_SNSLESS_PARMS_CALC?MAIN
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 3
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 3
 
 
             CODE    18A8H     003AH     UNIT         ?PR?ADC_CURRENTSHUNT_COMPARE_START?MAIN
@@ -179,7 +179,7 @@ SEGMENT                                             BIT_GROUP          DATA_GROU
   +--> ?PR?ADC_PWM_FALLEDGE_BEMF_DCT?MAIN
 
 ?PR?_SETMOTORSPIN?MAIN                           0020H.6  0000H.1    0078H    0001H
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 4
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 4
 
 
   +--> ?PR?_SETBLDCDIRPWM?BLDC_WITH_HALL
@@ -239,7 +239,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   D:00B3H         PUBLIC        P1M1
   D:00B2H         PUBLIC        P0M2
   D:0080H         PUBLIC        P0
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 5
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 5
 
 
   D:00B4H         PUBLIC        P1M2
@@ -299,7 +299,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:17AAH         LINE#         28
   C:17ACH         LINE#         29
   C:17AEH         LINE#         30
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 6
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 6
 
 
   C:17B0H         LINE#         31
@@ -359,7 +359,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   D:00B3H         PUBLIC        P1S
   D:00E8H         PUBLIC        ADCCON0
   C:0003H         PUBLIC        _SetBLDCDirPWM
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 7
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 7
 
 
   D:00C0H         PUBLIC        I2CON
@@ -419,7 +419,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:1955H         LINE#         50
   -------         ENDPROC       GETBLDCDIRECTIONU3
   -------         PROC          UPDATEHALL
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 8
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 8
 
 
   C:003EH         LINE#         52
@@ -479,7 +479,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:15DAH         LINE#         112
   C:15DAH         LINE#         113
   C:15E2H         LINE#         114
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 9
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 9
 
 
   C:15E2H         LINE#         115
@@ -539,7 +539,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:129DH         LINE#         176
   C:12A0H         LINE#         177
   C:12A0H         LINE#         178
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 10
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 10
 
 
   C:12A0H         LINE#         179
@@ -599,7 +599,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:1314H         LINE#         233
   C:1317H         LINE#         234
   C:131AH         LINE#         235
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 11
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 11
 
 
   C:131CH         LINE#         236
@@ -659,7 +659,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:0F28H         LINE#         116
   C:0F2AH         LINE#         118
   C:0F2BH         LINE#         119
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 12
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 12
 
 
   C:0F33H         LINE#         120
@@ -719,7 +719,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   -------         ENDPROC       BEMF_GPIO_ADCIN_INIT
   -------         ENDMOD        BLDC_SENSORLESS
 
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 13
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 13
 
 
   -------         MODULE        MAIN
@@ -779,7 +779,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:1829H         PUBLIC        main
   D:00F7H         PUBLIC        EIPH
   C:1923H         PUBLIC        BLDC_SNSLess_StepXL
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 14
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 14
 
 
   D:003CH         PUBLIC        adcalterreg0s
@@ -839,7 +839,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   D:00C0H         PUBLIC        I2CON
   B:0021H.4       PUBLIC        ENABLE_SVPWM_FOR_SYNCM
   D:00EFH         PUBLIC        EIP
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 15
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 15
 
 
   C:195DH         PUBLIC        ADCInit
@@ -899,7 +899,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:16EEH         LINE#         174
   C:16F1H         LINE#         175
   C:16F4H         LINE#         176
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 16
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 16
 
 
   C:16F7H         LINE#         177
@@ -959,7 +959,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:1645H         LINE#         246
   C:1645H         LINE#         247
   C:164AH         LINE#         248
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 17
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 17
 
 
   C:164AH         LINE#         249
@@ -1019,7 +1019,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:1455H         LINE#         305
   C:1455H         LINE#         306
   C:145BH         LINE#         307
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 18
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 18
 
 
   C:1464H         LINE#         308
@@ -1079,7 +1079,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:18D2H         LINE#         362
   C:18D5H         LINE#         363
   C:18D5H         LINE#         364
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 19
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 19
 
 
   C:18D8H         LINE#         365
@@ -1139,7 +1139,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:098FH         LINE#         419
   C:0991H         LINE#         421
   C:0991H         LINE#         422
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 20
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 20
 
 
   C:09ABH         LINE#         423
@@ -1199,7 +1199,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:193EH         LINE#         501
   C:193EH         LINE#         502
   C:193EH         LINE#         503
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 21
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 21
 
 
   -------         ENDPROC       BLDC_SNSLESS_STEPXL
@@ -1259,7 +1259,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:133AH         LINE#         568
   C:133AH         LINE#         569
   C:1341H         LINE#         570
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 22
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 22
 
 
   C:1344H         LINE#         571
@@ -1319,7 +1319,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:11B0H         LINE#         639
   C:11B4H         LINE#         641
   C:11B7H         LINE#         642
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 23
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 23
 
 
   C:11C1H         LINE#         643
@@ -1379,7 +1379,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:183CH         LINE#         694
   C:183FH         LINE#         695
   C:1842H         LINE#         697
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 24
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 24
 
 
   C:1847H         LINE#         699
@@ -1439,7 +1439,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   B:0022H.3       PUBLIC        PhaseU_Target
   D:00C7H         PUBLIC        TA
   B:0022H.4       PUBLIC        PhaseV_Target
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 25
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 25
 
 
   B:0022H.5       PUBLIC        PhaseW_Target
@@ -1499,7 +1499,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:0D21H         LINE#         266
   C:0D24H         LINE#         267
   C:0D27H         LINE#         268
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 26
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 26
 
 
   C:0D2AH         LINE#         269
@@ -1559,7 +1559,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   C:0DC6H         LINE#         347
   C:0DC9H         LINE#         348
   C:0DCCH         LINE#         349
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 27
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 27
 
 
   C:0DCFH         LINE#         350
@@ -1619,7 +1619,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLD
   -------         MODULE        ?C?LLDCODE
   C:053CH         PUBLIC        ?C?LLDCODE
   -------         ENDMOD        ?C?LLDCODE
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:51:47  PAGE 28
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  03/16/2019  10:48:28  PAGE 28
 
 
 

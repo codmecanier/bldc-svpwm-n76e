@@ -137,32 +137,16 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>125</LineNumber>
+          <LineNumber>115</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>-16773312</Address>
+          <Address>-16773343</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>E:\无刷电机驱动器\DAS03418 多合一程序 n76e\N76E\BLDC_SENSORLESS.C</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>124</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>E:\无刷电机驱动器\DAS03418 多合一程序 n76e\N76E\BLDC_Sensorless.c</Filename>
+          <Filename>BLDC_SENSORLESS.C</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>

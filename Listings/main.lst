@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52          unsigned int pdata CalcElectricAngle = 0;
   53          unsigned int pdata  SVPDriveAngle = 0;
   54          unsigned char pdata SVPWMCurPWM = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 2   
 
   55          unsigned char xdata ExecuteSVPBL_PWM = 0;
   56          unsigned int pdata PulseCount = 0;
@@ -126,7 +126,7 @@ line level    source
  114          //    }
  115          //    if (RI)
  116          //    {
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 3   
 
  117          //        RI = 0;
  118          //        buffer[wptr++] = SBUF;
@@ -190,7 +190,7 @@ line level    source
  176   2          RCMP2H = 0XFE;
  177   2          EIE |= 0X04;    //input capture interrupt enable
  178   2        }
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 4   
 
  179   1        
  180   1      //  RL3 = 0X00;
@@ -254,7 +254,7 @@ line level    source
  238   2          if(!BLDC_SENSORLESS && !SVPWMmode)
  239   2          {
  240   3            EA = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 5   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 5   
 
  241   3            CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
  242   3            SetElecCycleU3(CurrentElectricCycle);
@@ -318,7 +318,7 @@ line level    source
  300   3            i = 1;
  301   3          else
  302   3            i = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 6   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 6   
 
  303   3          break;
  304   3          }
@@ -382,7 +382,7 @@ line level    source
  362   2            ADCCON0 = 0X20; // PWM4 trig
  363   2        }
  364   1        ADCDLY = 5;
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 7   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 7   
 
  365   1        ADCCON2 = 0x20; //enable fault brake
  366   1        CShunt_ADC_Interrupt = 1;
@@ -446,7 +446,7 @@ line level    source
  424   4              ripple = 1;
  425   4            }
  426   3          }
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 8   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 8   
 
  427   2          if(Previous2CaptureCnt > Previous1CaptureCnt)
  428   2          {
@@ -510,7 +510,7 @@ line level    source
  483          
  484          void BLDC_SNSLess_StepXL() using 2
  485          {
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 9   
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 9   
 
  486   1          //30DEG delay Counting Start
  487   1          if(0)
@@ -574,7 +574,7 @@ line level    source
  544   2          SetMotorSpin(101,1);
  545   2          SetBLDCPWM(BLDC_SNSLess_PWM);   
  546   2          
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 10  
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 10  
 
  547   2          BLDC_SNSLess_StepXL();
  548   2          SetElecCycleU2(CurrentElectricCycle);
@@ -638,7 +638,7 @@ line level    source
  606          void PWM_Interr_ISR() interrupt 13 using 0
  607          {
  608   1        PWMF = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 11  
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 11  
 
  609   1      }
  610          
@@ -702,7 +702,7 @@ line level    source
  668   1        ADCMPL = th & 0xff;;
  669   1      }
  670          
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 12  
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 12  
 
  671          void ADCInit()
  672          {
@@ -766,7 +766,7 @@ line level    source
  730   3            else  
  731   3              UartSendStr("HB-");
  732   3            
-C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:51:47 PAGE 13  
+C51 COMPILER V9.59.0.0   MAIN                                                              03/16/2019 10:48:28 PAGE 13  
 
  733   3            if(HC)
  734   3              UartSendStr("HC+");
