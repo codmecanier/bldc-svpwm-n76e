@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -20,7 +20,7 @@ line level    source
   10          bit SVPReverseSpin = 1;
   11          bit ENABLE_SVPWM_FOR_SYNCM = 0;
   12          bit BLDC_SENSORLESS = 1;
-  13          bit BEMF_PWM_ON_Detect = 1;
+  13          bit BEMF_PWM_ON_Detect = 0;
   14          unsigned char BLDC_SNSless_30degDLY = 0;
   15          unsigned char ElecAngleOffestCCW = 189;
   16          unsigned char StableCount = 10;
@@ -62,7 +62,7 @@ line level    source
   51          {
   52          DC_VOLTAGE_SMPL ,
   53          BEMF_SMPL       ,
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 2   
 
   54          NTC_ADC         , 
   55          DC_VOLTAGE_SMPL ,
@@ -126,7 +126,7 @@ line level    source
  113          //{
  114          //  UartSend(number[num%1000/100]);
  115          //  UartSend(number[num%100/10]);
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 3   
 
  116          //  UartSend(number[num%10]);
  117          //}
@@ -190,7 +190,7 @@ line level    source
  175   1        unsigned int blpwm;
  176   1        blpwm = pwm;
  177   1        SetBLDCDirPWM(blpwm,dir);
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 4   
 
  178   1        SetSVPWMValue(pwm);
  179   1        SVPReverseSpin = dir;
@@ -254,7 +254,7 @@ line level    source
  236   3          else if(C0H < 6)
  237   3            i = 1;
  238   3          else
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 5   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 5   
 
  239   3            i = 0;
  240   3          break;
@@ -318,7 +318,7 @@ line level    source
  298          void Input_Capture_Interrupt_ISR() interrupt 12 using 3
  299          {
  300   1        bit ripple = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 6   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 6   
 
  301   1        CAPCON0 &= 0XFE;
  302   1        Previous2MechanicalDelay = Previous1MechanicalDelay;
@@ -382,7 +382,7 @@ line level    source
  360   2          {   
  361   3            if(Previous1CaptureCnt - Previous2CaptureCnt > 200)
  362   3            {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 7   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 7   
 
  363   4              ripple = 1;
  364   4            }
@@ -439,14 +439,14 @@ line level    source
  412   1        if(BLDC_SENSORLESS)
  413   1        { 
  414   2          T3CON &= 0XE7;
- 415   2        //  debug1 = 0;
+ 415   2          debug1 = 0;
  416   2        }
  417   1        if(ENABLE_SVPWM_FOR_SYNCM)
  418   1        {
  419   2          //These codes used only for SVPWM mode
  420   2          if(SVPDriveAngle < 255-SVPAngleStep)
  421   2            SVPDriveAngle += SVPAngleStep;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 8   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 8   
 
  422   2          else
  423   2          {
@@ -483,187 +483,201 @@ line level    source
  453          void ADC_Interrupt_ISR() interrupt 11 using 1
  454          {
  455   1        unsigned char i;
- 456   1        ADCF = 0;
- 457   1        i = ADCCON0 & 0X07;
- 458   1      //  debug1 = !debug1;
- 459   1        switch(i)
- 460   1        {
- 461   2          case 0:
- 462   2      //      NTC_ADC_Value = ADCRH << 4 + ADCRL;
- 463   2            break;   //temperature adc
- 464   2          case 1:
- 465   2            Current_SENSE_ADC_Value = (ADCRH << 4) + ADCRL;
- 466   2            ADC_IsSampleCurrentFinishd = 1;
- 467   2            break;  //current sense adc
- 468   2          case 2:
- 469   2            External_Analog_ADC_Value = (ADCRH << 4) + ADCRL;
- 470   2            break;  //external analog input
- 471   2          case 3:
- 472   2            Set_Phase_U_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
- 473   2            break;  //bemf w channel
- 474   2          case 4:   
- 475   2            Set_Phase_V_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
- 476   2            break;  //bemf v channel
- 477   2          case 5:
- 478   2            Set_Phase_W_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
- 479   2            break;  //bemf u channel
- 480   2        } 
- 481   1        debug1 = 0;
- 482   1        if(ADC_IsSampleCurrentFinishd)
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 9   
+ 456   1        bit currentsense_finish = 0;
+ 457   1        ADCF = 0;
+ 458   1        i = ADCCON0 & 0X07;
+ 459   1      //  debug1 = !debug1;
+ 460   1        switch(i)
+ 461   1        {
+ 462   2          case 0:
+ 463   2      //      NTC_ADC_Value = ADCRH << 4 + ADCRL;
+ 464   2            break;   //temperature adc
+ 465   2          case 1:
+ 466   2            Current_SENSE_ADC_Value = (ADCRH << 4) + ADCRL;
+ 467   2            ADC_IsSampleCurrentFinishd = 1;
+ 468   2            if(!BEMF_PWM_ON_Detect)
+ 469   2            { 
+ 470   3                if(BEMF_Calculate(CurrentElectricCycle))
+ 471   3                {
+ 472   4                  if((T3CON & 0x08) == 0)
+ 473   4                  {
+ 474   5                    UpdateBLDC_Dly(Previous1MechanicalDelay);
+ 475   5                    debug1 = 1;
+ 476   5                  }
+ 477   4                }
+ 478   3            }
+ 479   2            break;  //current sense adc
+ 480   2          case 2:
+ 481   2            External_Analog_ADC_Value = (ADCRH << 4) + ADCRL;
+ 482   2            break;  //external analog input
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 9   
 
- 483   1        { 
- 484   2          switch(ADC_Sample_Sequence[ADC_SampleTimes])
- 485   2          {
- 486   3            case DC_VOLTAGE_SMPL:
- 487   3            {
- 488   4              Start_BEMF_Detect_ADC(CurrentElectricCycle,1);
- 489   4              break;
- 490   4            }
- 491   3            case BEMF_SMPL:
- 492   3            {       
- 493   4              Start_BEMF_Detect_ADC(CurrentElectricCycle,2);
- 494   4              break;
- 495   4            }
- 496   3            case NTC_ADC:
- 497   3            { 
- 498   4                ADCCON0 &= 0XF0;
- 499   4                ADCCON0 |= 0X00;
- 500   4                ADCCON1 = 0X01;////
- 501   4                ADCDLY = 0;
- 502   4                ADCCON2 = 0x00;
- 503   4                ADCCON0 |= 0X40;  //start adc 
- 504   4              break;
- 505   4            }
- 506   3            case EXTERNAL_ANALOG:
- 507   3            {
- 508   4                ADCCON0 &= 0XF0;
- 509   4                ADCCON0 |= 0X02;
- 510   4                ADCCON1 = 0X01;////
- 511   4                ADCDLY = 0;
- 512   4                ADCCON2 = 0x00;
- 513   4                ADCCON0 |= 0X40;  //start adc   
- 514   4              break;
- 515   4            }
- 516   3          }
- 517   2          ADC_IsSampleCurrentFinishd = 0;
- 518   2        }
- 519   1        else
- 520   1        {
- 521   2          ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
- 522   2          debug1 = 1;
- 523   2          if(BEMF_Calculate(CurrentElectricCycle))
- 524   2          {
- 525   3            if((T3CON & 0x08) == 0)
- 526   3            {
- 527   4              UpdateBLDC_Dly(Previous1MechanicalDelay);
- 528   4              //debug1 = 1;
- 529   4            }
- 530   3          }
- 531   2        }
- 532   1        debug1 = 1; 
- 533   1        if(ADC_SampleTimes >= 5)
- 534   1        {
- 535   2            ADC_SampleTimes = 0;
- 536   2        }
- 537   1        else
- 538   1        {
- 539   2          ADC_SampleTimes += 1;
- 540   2        }
- 541   1      }
- 542          
- 543          void Set_Currrent_Limit_Threshold(unsigned int th)
- 544          {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 10  
+ 483   2          case 3:
+ 484   2            Set_Phase_U_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
+ 485   2            break;  //bemf w channel
+ 486   2          case 4:   
+ 487   2            Set_Phase_V_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
+ 488   2            break;  //bemf v channel
+ 489   2          case 5:
+ 490   2            Set_Phase_W_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
+ 491   2            break;  //bemf u channel
+ 492   2        } 
+ 493   1      //  debug1 = 0;
+ 494   1        if(ADC_IsSampleCurrentFinishd)
+ 495   1        { 
+ 496   2          switch(ADC_Sample_Sequence[ADC_SampleTimes])
+ 497   2          {
+ 498   3            case DC_VOLTAGE_SMPL:
+ 499   3            {
+ 500   4              Start_BEMF_Detect_ADC(CurrentElectricCycle,1,BEMF_PWM_ON_Detect);
+ 501   4              break;
+ 502   4            }
+ 503   3            case BEMF_SMPL:
+ 504   3            {       
+ 505   4              Start_BEMF_Detect_ADC(CurrentElectricCycle,2,BEMF_PWM_ON_Detect);
+ 506   4              break;
+ 507   4            }
+ 508   3            case NTC_ADC:
+ 509   3            { 
+ 510   4                ADCCON0 &= 0XF0;
+ 511   4                ADCCON0 |= 0X00;
+ 512   4                ADCCON1 = 0X01;////
+ 513   4                ADCDLY = 0;
+ 514   4                ADCCON2 = 0x00;
+ 515   4                ADCCON0 |= 0X40;  //start adc     
+ 516   4              break;
+ 517   4            }
+ 518   3            case EXTERNAL_ANALOG:
+ 519   3            {
+ 520   4                ADCCON0 &= 0XF0;
+ 521   4                ADCCON0 |= 0X02;
+ 522   4                ADCCON1 = 0X01;////
+ 523   4                ADCDLY = 0;
+ 524   4                ADCCON2 = 0x00;
+ 525   4                ADCCON0 |= 0X40;  //start adc   
+ 526   4              break;
+ 527   4            }
+ 528   3          }
+ 529   2          ADC_IsSampleCurrentFinishd = 0;
+ 530   2        }
+ 531   1        else
+ 532   1        {
+ 533   2          ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
+ 534   2          if(BEMF_PWM_ON_Detect)
+ 535   2          {
+ 536   3            if(BEMF_Calculate(CurrentElectricCycle))
+ 537   3            {
+ 538   4              if((T3CON & 0x08) == 0)
+ 539   4              {
+ 540   5                UpdateBLDC_Dly(Previous1MechanicalDelay);
+ 541   5                debug1 = 1;
+ 542   5              }
+ 543   4            }
+ 544   3          }
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 10  
 
- 545   1        ADCMPH = th >> 8; //current limit
- 546   1        ADCMPL = th & 0xff;;
- 547   1      }
- 548          
- 549          void ADCInit()
- 550          {
- 551   1        Set_Currrent_Limit_Threshold(0xfff);
- 552   1        ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
- 553   1        EADC = 1;
- 554   1      }
- 555          
- 556          void main(void)
- 557          {
- 558   1        unsigned int i;
- 559   1      //  UartInit();
- 560   1        Inverter_ControlGPIO_Init();
- 561   1        HallGpioInit();
- 562   1        BEMF_Gpio_ADCIN_Init();
- 563   1        ADCInit();
- 564   1        SetMotorSpin(180,1);
- 565   1        TimerInit();
- 566   1      //  PWM_Interrupu_Init();
- 567   1        
- 568   1        P0M1 &= 0x7f;
- 569   1        P0M2 |= 0x80;
- 570   1          
- 571   1        P1M1 &= 0Xb0;
- 572   1        P1M2 &= 0Xb0; 
- 573   1        
- 574   1        debug1 = 1;
- 575   1        
- 576   1      //  UartSendStr("DAS02418");
- 577   1        while(1)
- 578   1        {
- 579   2          for(i = 0;i < 254;i += 1)
- 580   2          { 
- 581   3            
- 582   3        //  BLDCTimerEventHandler();
- 583   3        //    UpdateBLDCInverter(i);
- 584   3      
- 585   3            //CalculateInverterVectorsWidth_Polar(i);
- 586   3      /*      UART_Write_Int_Value(CalcElectricAngle);
- 587   3            if(HA)
- 588   3              UartSendStr("HA+");
- 589   3            else  
- 590   3              UartSendStr("HA-");
- 591   3            
- 592   3            if(HB)
- 593   3              UartSendStr("HB+");
- 594   3            else  
- 595   3              UartSendStr("HB-");
- 596   3            
- 597   3            if(HC)
- 598   3              UartSendStr("HC+");
- 599   3            else  
- 600   3              UartSendStr("HC-");
- 601   3            switch(DetermineCurrentElecCycle(0))
- 602   3            {
- 603   3              case 0:
- 604   3                UartSendStr("HALL ERROR\r\n"); break;
- 605   3              case 1:
- 606   3                UartSendStr("HALL 1\r\n");break;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:02:51 PAGE 11  
+ 545   2        }
+ 546   1      //  debug1 = 1; 
+ 547   1        if(ADC_SampleTimes >= 5)
+ 548   1        {
+ 549   2            ADC_SampleTimes = 0;
+ 550   2        }
+ 551   1        else
+ 552   1        {
+ 553   2          ADC_SampleTimes += 1;
+ 554   2        }
+ 555   1      }
+ 556          
+ 557          void Set_Currrent_Limit_Threshold(unsigned int th)
+ 558          {
+ 559   1        ADCMPH = th >> 8; //current limit
+ 560   1        ADCMPL = th & 0xff;;
+ 561   1      }
+ 562          
+ 563          void ADCInit()
+ 564          {
+ 565   1        Set_Currrent_Limit_Threshold(0xfff);
+ 566   1        ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
+ 567   1        EADC = 1;
+ 568   1      }
+ 569          
+ 570          void main(void)
+ 571          {
+ 572   1        unsigned int i;
+ 573   1      //  UartInit();
+ 574   1        Inverter_ControlGPIO_Init();
+ 575   1        HallGpioInit();
+ 576   1        BEMF_Gpio_ADCIN_Init();
+ 577   1        ADCInit();
+ 578   1        SetMotorSpin(92,1);
+ 579   1        TimerInit();
+ 580   1      //  PWM_Interrupu_Init();
+ 581   1        
+ 582   1        P0M1 &= 0x7f;
+ 583   1        P0M2 |= 0x80;
+ 584   1          
+ 585   1        P1M1 &= 0Xb0;
+ 586   1        P1M2 &= 0Xb0; 
+ 587   1        
+ 588   1        debug1 = 1;
+ 589   1        
+ 590   1      //  UartSendStr("DAS02418");
+ 591   1        while(1)
+ 592   1        {
+ 593   2          for(i = 0;i < 254;i += 1)
+ 594   2          { 
+ 595   3            
+ 596   3        //  BLDCTimerEventHandler();
+ 597   3        //    UpdateBLDCInverter(i);
+ 598   3      
+ 599   3            //CalculateInverterVectorsWidth_Polar(i);
+ 600   3      /*      UART_Write_Int_Value(CalcElectricAngle);
+ 601   3            if(HA)
+ 602   3              UartSendStr("HA+");
+ 603   3            else  
+ 604   3              UartSendStr("HA-");
+ 605   3            
+ 606   3            if(HB)
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 21:54:48 PAGE 11  
 
- 607   3              case 2:
- 608   3                UartSendStr("HALL 2\r\n");break;
- 609   3              case 3:
- 610   3                UartSendStr("HALL 3\r\n");break;
- 611   3              case 4:
- 612   3                UartSendStr("HALL 4\r\n");break;
- 613   3              case 5:
- 614   3                UartSendStr("HALL 5\r\n");break;
- 615   3              case 6:
- 616   3                UartSendStr("HALL 6\r\n");break;
- 617   3            }*/
- 618   3          }
- 619   2        }
- 620   1      }
+ 607   3              UartSendStr("HB+");
+ 608   3            else  
+ 609   3              UartSendStr("HB-");
+ 610   3            
+ 611   3            if(HC)
+ 612   3              UartSendStr("HC+");
+ 613   3            else  
+ 614   3              UartSendStr("HC-");
+ 615   3            switch(DetermineCurrentElecCycle(0))
+ 616   3            {
+ 617   3              case 0:
+ 618   3                UartSendStr("HALL ERROR\r\n"); break;
+ 619   3              case 1:
+ 620   3                UartSendStr("HALL 1\r\n");break;
+ 621   3              case 2:
+ 622   3                UartSendStr("HALL 2\r\n");break;
+ 623   3              case 3:
+ 624   3                UartSendStr("HALL 3\r\n");break;
+ 625   3              case 4:
+ 626   3                UartSendStr("HALL 4\r\n");break;
+ 627   3              case 5:
+ 628   3                UartSendStr("HALL 5\r\n");break;
+ 629   3              case 6:
+ 630   3                UartSendStr("HALL 6\r\n");break;
+ 631   3            }*/
+ 632   3          }
+ 633   2        }
+ 634   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1547    ----
+   CODE SIZE        =   1585    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      1    ----
    PDATA SIZE       =     29    ----
    DATA SIZE        =     24       2
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =      6       2
+   BIT SIZE         =      6       3
 END OF MODULE INFORMATION.
 
 

@@ -37,9 +37,12 @@ void Set_Phase_W_Voltage_ADC_Value(unsigned int i) using 1
 	Phase_UVW_Voltage_ADC_Value[2] = i;
 }
 
-void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times) using 1
+void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times, bit pwm_on_sense) using 1
 {
-	ADCCON1 = 0X01;////
+	if(pwm_on_sense)
+		ADCCON1 = 0X01;
+	else
+		ADCCON1 = 0X03;
 	ADCCON0 &= 0XF0;
 	eleccycle -= 1;
 	if(times == 1)
@@ -48,7 +51,8 @@ void Start_BEMF_Detect_ADC(unsigned char eleccycle, unsigned char times) using 1
 		ADCCON0 |= 0X03 + BEMF_DCT_Params[eleccycle][BEMF_CH];
 	ADCDLY = 0;
 	ADCCON2 = 0x00;
-	ADCCON0 |= 0X40;	//start adc
+	if(pwm_on_sense)
+		ADCCON0 |= 0X40;	//start adc
 }	
 
 

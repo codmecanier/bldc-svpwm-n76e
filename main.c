@@ -10,7 +10,7 @@ bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
 bit BLDC_SENSORLESS = 1;
-bit BEMF_PWM_ON_Detect = 1;
+bit BEMF_PWM_ON_Detect = 0;
 unsigned char BLDC_SNSless_30degDLY = 0;
 unsigned char ElecAngleOffestCCW = 189;
 unsigned char StableCount = 10;
@@ -177,6 +177,7 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SetBLDCDirPWM(blpwm,dir);
 	SetSVPWMValue(pwm);
 	SVPReverseSpin = dir;
+	BEMF_PWM_ON_Detect = pwm > 128;
 }
 
 
@@ -412,7 +413,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 	if(BLDC_SENSORLESS)
 	{	
 		T3CON &= 0XE7;
-	//	debug1 = 0;
+		debug1 = 0;
 	}
 	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
@@ -453,6 +454,7 @@ void ADC_CurrentShunt_Compare_Start(unsigned char elecc) using 1
 void ADC_Interrupt_ISR() interrupt 11 using 1
 {
 	unsigned char i;
+	bit currentsense_finish = 0;
 	ADCF = 0;
 	i = ADCCON0 & 0X07;
 //	debug1 = !debug1;
@@ -464,6 +466,17 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 		case 1:
 			Current_SENSE_ADC_Value = (ADCRH << 4) + ADCRL;
 			ADC_IsSampleCurrentFinishd = 1;
+			if(!BEMF_PWM_ON_Detect)
+			{	
+					if(BEMF_Calculate(CurrentElectricCycle))
+					{
+						if((T3CON & 0x08) == 0)
+						{
+							UpdateBLDC_Dly(Previous1MechanicalDelay);
+							debug1 = 1;
+						}
+					}
+			}
 			break;	//current sense adc
 		case 2:
 			External_Analog_ADC_Value = (ADCRH << 4) + ADCRL;
@@ -478,19 +491,19 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 			Set_Phase_W_Voltage_ADC_Value((ADCRH << 4) + ADCRL);
 			break;	//bemf u channel
 	}	
-	debug1 = 0;
+//	debug1 = 0;
 	if(ADC_IsSampleCurrentFinishd)
 	{	
 		switch(ADC_Sample_Sequence[ADC_SampleTimes])
 		{
 			case DC_VOLTAGE_SMPL:
 			{
-				Start_BEMF_Detect_ADC(CurrentElectricCycle,1);
+				Start_BEMF_Detect_ADC(CurrentElectricCycle,1,BEMF_PWM_ON_Detect);
 				break;
 			}
 			case BEMF_SMPL:
 			{				
-				Start_BEMF_Detect_ADC(CurrentElectricCycle,2);
+				Start_BEMF_Detect_ADC(CurrentElectricCycle,2,BEMF_PWM_ON_Detect);
 				break;
 			}
 			case NTC_ADC:
@@ -500,7 +513,7 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 					ADCCON1 = 0X01;////
 					ADCDLY = 0;
 					ADCCON2 = 0x00;
-					ADCCON0 |= 0X40;	//start adc	
+					ADCCON0 |= 0X40;	//start adc			
 				break;
 			}
 			case EXTERNAL_ANALOG:
@@ -519,17 +532,19 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 	else
 	{
 		ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
-		debug1 = 1;
-		if(BEMF_Calculate(CurrentElectricCycle))
+		if(BEMF_PWM_ON_Detect)
 		{
-			if((T3CON & 0x08) == 0)
+			if(BEMF_Calculate(CurrentElectricCycle))
 			{
-				UpdateBLDC_Dly(Previous1MechanicalDelay);
-				//debug1 = 1;
+				if((T3CON & 0x08) == 0)
+				{
+					UpdateBLDC_Dly(Previous1MechanicalDelay);
+					debug1 = 1;
+				}
 			}
 		}
 	}
-	debug1 = 1;	
+//	debug1 = 1;	
 	if(ADC_SampleTimes >= 5)
 	{
 			ADC_SampleTimes = 0;
@@ -561,7 +576,7 @@ void main(void)
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
 	ADCInit();
-	SetMotorSpin(180,1);
+	SetMotorSpin(92,1);
 	TimerInit();
 //	PWM_Interrupu_Init();
 	
