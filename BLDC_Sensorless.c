@@ -2,7 +2,7 @@
 #include <BLDC_Sensorless.h>
 
 #define MagDecayPulseDct 3		//Magnent Decay Detect threshold
-#define MagDecayPulseCnt 4		//Maagnent Decay Detect Count
+#define MagDecayPulseCnt 6		//Maagnent Decay Detect Count
 
 #define PhaseSwitchCount 5
 
@@ -91,7 +91,7 @@ unsigned char BEMF_Calculate(unsigned char eleccycle) using 1
 			eleci = eleccycle + 1;
 			if(Last_Rtn != eleci)
 			{	
-				P07 = !P07;
+	//			P07 = !P07;
 				Last_Rtn = eleci;	
 				return eleci;	
 			}

@@ -9,9 +9,9 @@
 unsigned char xdata StartUP_Process = 0;
 
 unsigned char xdata	STARTUP_FREQUENCY = 10;
-unsigned char xdata	STARTUP_END_FREQUENCY = 90;
+unsigned char xdata	STARTUP_END_FREQUENCY = 130;
 unsigned char xdata	STARTUP_PWM =	23;
-unsigned char xdata	STARTUP_END_PWM =	 150;
+unsigned char xdata	STARTUP_END_PWM =	 40;
 unsigned int xdata ACCELERATION_TIME = 1000;
 unsigned int xdata LOCK_POSITION_TIME = 500	;  
 unsigned int xdata LOCK_POSITION_PWM = 26	;  
@@ -54,8 +54,9 @@ unsigned char SVPWMCurPWM = 0;
 unsigned char xdata ExecuteSVPBL_PWM = 0;
 unsigned int pdata PulseCount = 0;
 unsigned char SVP_Angle_Delay = 0;
+volatile unsigned int Previous1MechanicalDelay,Previous2MechanicalDelay;
 unsigned int pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,Previous4CaptureCnt;
-unsigned int pdata Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
+unsigned int pdata CurrentElectricAngle, PreviousElectricAngle;
 unsigned int pdata External_Analog_ADC_Value = 0;
 unsigned int Current_SENSE_ADC_Value = 0;
 volatile unsigned char data CurrentElectricCycle = 0;
@@ -146,15 +147,26 @@ void UartInit()
 void TimerInit()
 {
 //	CKCON |= 0X18;
-	TMOD = 0x00;   
-	T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59
-	CAPCON0 |= 0X10;
-	CAPCON1 = 0X00;
-	CAPCON2 = 0X10;
-//	CAPCON3 = 0X04;
-	CAPCON3 = 0X08;
-	RCMP2H = 0XFF;
-	RCMP2H = 0XFE;
+	TMOD = 0x00; 
+
+	if(BLDC_SENSORLESS)
+	{
+		T2MOD = 0X60; //Set Timer2 Params
+		TH2 = TL2 = 0;
+	}
+	else
+	{
+		T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59
+			
+		CAPCON0 |= 0X10;	//Hall Signal Capture
+		CAPCON1 = 0X00;
+		CAPCON2 = 0X10;
+	//	CAPCON3 = 0X04;
+		CAPCON3 = 0X08;
+		RCMP2H = 0XFF;
+		RCMP2H = 0XFE;
+		EIE |= 0X04;		//input capture interrupt enable
+	}
 	
 //	RL3 = 0X00;
 //	RH3 = 0XF0;
@@ -164,7 +176,6 @@ void TimerInit()
 	
 	TH1 = 0x70;
 	TL1 = 0x24;
-	EIE |= 0X04;		//input capture interrupt enable
 	
 	T2CON |= 0X04;
 	
@@ -204,6 +215,7 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SetBLDCDirPWM(blpwm,dir);
 	SetSVPWMValue(pwm);
 	SVPReverseSpin = dir;
+	InverterPWMValue = pwm;
 	BEMF_PWM_ON_Detect = pwm > 128;
 }
 
@@ -332,7 +344,9 @@ void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 	bit ripple = 0;
 	CAPCON0 &= 0XFE;
 	Previous2MechanicalDelay = Previous1MechanicalDelay;
+	EADC = 0;
 	Previous1MechanicalDelay = ((int)C0H << 8)+ C0L;
+	EADC = 1;
 	if(ENABLE_SVPWM_FOR_SYNCM)
 	{
 		if(SVPReverseSpin)
@@ -438,30 +452,46 @@ void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 	}
 }
 
+void BLDC_SNSLess_StepXL() using 2
+{
+		//30DEG delay Counting Start
+		if(0)
+		{
+			if(CurrentElectricCycle<6)	CurrentElectricCycle+=1;
+			else		
+			{
+				CurrentElectricCycle = 1;
+			}
+		}
+		else
+		{ 
+			if(CurrentElectricCycle>1)	CurrentElectricCycle-=1;
+			else		
+			{
+				CurrentElectricCycle = 6;	
+			}
+		}
+}
+
 void Timer3_Interr_ISR() interrupt 16 using 2
 {	
 	T3CON &= 0XEF;	//clear timer interrupt
 	if(BLDC_SENSORLESS)
 	{	
 		SetBLDCPWM(InverterPWMValue);		
-		if(0)
-		{
-			if(CurrentElectricCycle<6)	CurrentElectricCycle+=1;
-			else		CurrentElectricCycle = 1;
-		}else
-		{ 
-			if(CurrentElectricCycle>1)	CurrentElectricCycle-=1;
-			else		CurrentElectricCycle = 6;
-		}
+		BLDC_SNSLess_StepXL();
 		if(BLDC_Sensorless_Status == BLDC_Run)
 		{
 			T3CON &= 0XE7;		//Timer3 Stop
-	//		debug1 = 0;
+			
+			debug1 = 0;
 		}
 		SetElecCycleU2(CurrentElectricCycle);
 		UpdateBLDCInverter();
-		BEMF_Phaseswitch_Count = BEMF_SWITCH_PHASE_DELAY;
-		BEMF_Detect_Switch_Enable = 1;
+		
+		TH2 = TL2 = 0;
+		TR2 = 1;
+		
 		//Calculate Startup Process
 		if(BLDC_Sensorless_Status == BLDC_Startup)
 		{
@@ -478,8 +508,9 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 			if((UsedStartupTime > Accelerationtime))
 			{
 				//startup_failed
-				BLDC_Sensorless_Status = BLDC_Run;
+				BLDC_Sensorless_Status = BLDC_Run;			
 				T3CON &= 0XE7;		//Timer3 Stop
+				SetMotorSpin(250,1);
 				
 			}
 			else
@@ -542,9 +573,17 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 					if(BEMF_Calculate(CurrentElectricCycle) == CurrentElectricCycle)
 					{
 						if((T3CON & 0X08)==0)
-						{							
-							UpdateBLDC_Dly(Previous1MechanicalDelay >> 3);
-				//			debug1 = 1;
+						{			
+							// Timer2 30deg Counting
+							TR2 = 0;				
+							Previous2MechanicalDelay = Previous1MechanicalDelay;
+							if(BLDC_Sensorless_Status == BLDC_Run)
+								Previous1MechanicalDelay = (TH2 << 8) + TL2;
+							else
+								Previous1MechanicalDelay = 0;
+													
+							UpdateBLDC_Dly((Previous1MechanicalDelay + Previous2MechanicalDelay) >> 1);
+							debug1 = 1;
 						}
 					}
 			}
@@ -608,9 +647,17 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 			if(BEMF_Calculate(CurrentElectricCycle) == CurrentElectricCycle)
 			{
 				if((T3CON & 0X08)==0)
-				{					
-					UpdateBLDC_Dly(Previous1MechanicalDelay >> 3);
-		//			debug1 = 1;
+				{			
+					// Timer2 30deg Counting
+					TR2 = 0;				
+					Previous2MechanicalDelay = Previous1MechanicalDelay;
+					if(BLDC_Sensorless_Status == BLDC_Run)
+						Previous1MechanicalDelay = (TH2 << 8) + TL2;
+					else
+						Previous1MechanicalDelay = 0;
+											
+					UpdateBLDC_Dly((Previous1MechanicalDelay + Previous2MechanicalDelay) >> 1);
+					debug1 = 1;
 				}
 			}
 		}
@@ -654,7 +701,7 @@ void main(void)
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
 	ADCInit();
-	SetMotorSpin(150,1);
+	SetMotorSpin(30,1);
 	TimerInit();
 	BLDC_SNSless_Parms_Calc();
 	

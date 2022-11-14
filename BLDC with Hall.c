@@ -245,6 +245,8 @@ void UpdateBLDCInverter() using 3
 		{
 			ADCCON0 |= 0X20;	// PWM4 trig
 		}
+		
+		
 		EA = 1;
 		BLDC_Previous_Cycle= eleccycle;
 	}

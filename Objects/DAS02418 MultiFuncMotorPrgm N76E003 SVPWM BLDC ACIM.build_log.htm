@@ -30,8 +30,8 @@ compiling 3PhaseInverter.c...
 compiling BLDC with Hall.c...
 compiling BLDC_Sensorless.c...
 compiling main.c...
-main.c(515): warning C280: 'elecc': unreferenced local variable
-main.c(449): warning C294: unreachable code
+main.c(546): warning C280: 'elecc': unreferenced local variable
+main.c(460): warning C294: unreachable code
 compiling NTC.c...
 compiling SVPWM.c...
 SVPWM.c(240): warning C235: parameter 1: different types
@@ -50,9 +50,17 @@ linking...
     SEGMENT: ?PR?_ADC_CURRENTSHUNT_COMPARE_START?MAIN
     CALLER1: ?PR?ADC_INTERRUPT_ISR?MAIN
     CALLER2: ?C_C51STARTUP
-Program Size: data=118.7 xdata=571 code=6435
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_SETMOTORSPIN?MAIN
+    CALLER1: ?PR?TIMER3_INTERR_ISR?MAIN
+    CALLER2: ?C_C51STARTUP
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_SETBLDCDIRPWM?BLDC_WITH_HALL
+    CALLER1: ?PR?TIMER3_INTERR_ISR?MAIN
+    CALLER2: ?C_C51STARTUP
+Program Size: data=124.1 xdata=567 code=6534
 creating hex file from ".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM"...
-".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 9 Warning(s).
+".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 11 Warning(s).
 Build Time Elapsed:  00:00:01
 </pre>
 </body>
