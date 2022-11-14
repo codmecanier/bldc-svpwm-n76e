@@ -4,6 +4,13 @@
 #include <BLDC with Hall.h>
 #include "intrins.h"
 
+/************  The Configuration area  ***************
+ 
+ 
+ 
+ 
+*****************************************************/
+
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 
@@ -94,13 +101,14 @@ void TimerInit()
 {
 //	CKCON |= 0X18;
 	TMOD = 0x00;   
-	T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59
+	T2MOD = 0X69; //low speed 69 high speed 49 mid speed 59 Corresponds to different scaling factor (256, 128, 64)
+	RCMP2H = 0XFF;  // Reaload value of Timer2
+	RCMP2H = 0XFE;
+
 	CAPCON0 |= 0X10;
 	CAPCON1 = 0X00;
 	CAPCON2 = 0X10;
 	CAPCON3 = 0X04;
-	RCMP2H = 0XFF;
-	RCMP2H = 0XFE;
 	
 	RL3 = 0X00;
 	RH3 = 0XF0;
@@ -112,7 +120,7 @@ void TimerInit()
 	TL1 = 0x24;
 	EIE |= 0X04;
 	
-	T2CON |= 0X04;
+	T2CON |= 0X04; // TR2 = 1, Timer 2 Run
 	
 	EIPH |= 0X04;
 	EIP &= 0XFB;
@@ -152,39 +160,41 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SVPReverseSpin = dir;
 }
 
-
-void Pin_Interrupt_ISR() interrupt 7
+// GPIO 上升沿下降沿中断函数
+void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge triggered interrupt
 {
-	if(PIF & 0x38)
-	{
+	// 8 PIFs corresponds to eight GPIO interrupt sources independently
+	if(PIF & 0x38) // Interrupt triggered by bit {3,4,5}
+	{	// The Hall sensor Communitation counts here
 	}
-	if(PIF & 0x40)
+	if(PIF & 0x40)	// Interrupt triggered by the external clocking speed input
 	{
-		PIF &= 0XB0;
+		PIF &= 0XB0;	// Clear External Clock input Flag
 		if(PulseCount < 0xff)
-			PulseCount++;
+			PulseCount++;	// Count the number of pulses in one clock period
 	}
-	PIF &= 0x00;
+	PIF &= 0x00; // Clear All the GPIO rising edge or falling edge triggered Flags
 }
 
-void Timer0_ISR() interrupt 1
+void Timer0_ISR() interrupt 1  // Timer O Used for Speed ramping now
 {
-	TR0 = 0;
+	TR0 = 0; // Stop Timer0
 	TF0 = 0;
-	TL0 = 0xAB;	
+	TL0 = 0xAB;	 // Load Initial Values
 	TH0 = 0x2F;
 	PulseCount = 64;
 	if(ExecuteSVPBL_PWM < PulseCount) ExecuteSVPBL_PWM++;
 	if(ExecuteSVPBL_PWM > PulseCount) ExecuteSVPBL_PWM--;
 	SetMotorSpin(ExecuteSVPBL_PWM,1);
 	PulseCount = 0;
-	TR0 = 1;
+	TR0 = 1; 	//	Start Timer0
 }
 
-void SetSpeedRange_SVPrecision() using 1
+// Set the SVPWM Precision according to the current perios
+void SetSpeedRange_SVPrecision() using 1   
 {
 	unsigned char i;
-	switch(T2MOD)
+	switch(T2MOD)	// First read out the Period under differnet Timer scaling factors
 	{
 		case 0x69:
 		{
@@ -220,17 +230,17 @@ void SetSpeedRange_SVPrecision() using 1
 	SVPAngleStep = SVPNextAngleStep;
 	switch(i)
 	{
-		default :
-			T2MOD = 0x69;
+		default :	// Full SVPWM precision (8 bits)
+			T2MOD = 0x69;  // Set the timer scaling factor back
 			SVPNextAngleStep = 1;
 		break;
 		
-		case 1 :
+		case 1 :	// Halved SVPWM precision
 			T2MOD = 0x59;
 			SVPNextAngleStep = 2;
 		break;
 		
-		case 2 :
+		case 2 :	// Quadarple reduced SVPWM Precision
 			T2MOD = 0x49;
 			SVPNextAngleStep = 4;
 		break;
@@ -260,6 +270,8 @@ void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 	else
 		SVPDriveAngle = ElecAngleOffestCCW;	
 	Previous2MechanicalDelay = Previous1MechanicalDelay;
+
+	// Capture the Angular Speed and compensate it according to the T2MOD value 
 	Previous1MechanicalDelay = ((int)C0H << 8)+ C0L;
 	switch(T2MOD)
 	{
@@ -285,7 +297,7 @@ void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 	}
 }
 
-void Timer3_Interr_ISR() interrupt 16 using 1
+void Timer3_Interr_ISR() interrupt 16 using 1 // Timer 3 for incrementing the driving angle in SVPWM condition
 {	
 	T3CON &= 0XEF;
 	if(SVPDriveAngle < 251)
@@ -305,7 +317,7 @@ void Timer3_Interr_ISR() interrupt 16 using 1
 	}
 }
 
-void PWM_Interr_ISR() interrupt 13 using 2
+void PWM_Interr_ISR() interrupt 13 using 2  // The PWM edge Triggering functions interrupt
 {
 	PWMF = 0;
 	ADCCON0 |= 0X40;
