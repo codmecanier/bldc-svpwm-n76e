@@ -21,7 +21,7 @@ Target DLL:      Nuvoton_8051_Keil_uVision_Driver.dll V1.09
 Dialog DLL:      TP51.DLL V2.60.0.0
  
 <h2>Project:</h2>
-E:\无刷电机驱动器\DAS03418 多合一程序 n76e\N76E\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.uvproj
+E:\无刷电机驱动器\DAS03418 多合一程序 n76e\BACKUPS\BACKUP 2019.03.11.18.50\N76E\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.uvproj
 Project File Date:  02/19/2019
 
 <h2>Output:</h2>
@@ -30,12 +30,13 @@ compiling 3PhaseInverter.c...
 compiling BLDC with Hall.c...
 compiling BLDC_Sensorless.c...
 compiling main.c...
-main.c(546): warning C280: 'elecc': unreferenced local variable
-main.c(460): warning C294: unreachable code
+main.c(489): warning C294: unreachable code
 compiling NTC.c...
 compiling SVPWM.c...
 SVPWM.c(240): warning C235: parameter 1: different types
 linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_SETBLDCDIRPWMU2?BLDC_WITH_HALL
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?GETBLDCDIRECTION?BLDC_WITH_HALL
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
@@ -47,10 +48,6 @@ linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_GET_TEMPERATURE?NTC
 *** WARNING L15: MULTIPLE CALL TO SEGMENT
-    SEGMENT: ?PR?_ADC_CURRENTSHUNT_COMPARE_START?MAIN
-    CALLER1: ?PR?ADC_INTERRUPT_ISR?MAIN
-    CALLER2: ?C_C51STARTUP
-*** WARNING L15: MULTIPLE CALL TO SEGMENT
     SEGMENT: ?PR?_SETMOTORSPIN?MAIN
     CALLER1: ?PR?TIMER3_INTERR_ISR?MAIN
     CALLER2: ?C_C51STARTUP
@@ -58,9 +55,9 @@ linking...
     SEGMENT: ?PR?_SETBLDCDIRPWM?BLDC_WITH_HALL
     CALLER1: ?PR?TIMER3_INTERR_ISR?MAIN
     CALLER2: ?C_C51STARTUP
-Program Size: data=124.1 xdata=567 code=6534
+Program Size: data=121.2 xdata=587 code=6527
 creating hex file from ".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM"...
-".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 11 Warning(s).
+".\Objects\DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM" - 0 Error(s), 10 Warning(s).
 Build Time Elapsed:  00:00:01
 </pre>
 </body>

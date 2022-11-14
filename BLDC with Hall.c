@@ -21,6 +21,13 @@ void SetBLDCDirPWM(unsigned char pwm, bit dir)
 	BLDCSpeed = pwm;
 }
 
+void SetBLDCDirPWMU2(unsigned char pwm, bit dir) using 2
+{
+	BLDCReverse = dir;
+	BLDCSpeed = pwm;
+}
+
+
 void SetElecCycleU2(unsigned char i) using 2
 {
 	eleccycle = i;
@@ -138,7 +145,7 @@ unsigned char DetermineCurrentElecCycle(bit reverse) using 3
 	return 0;
 }
 
-void UpdateBLDCInverter() using 3
+void UpdateBLDCInverter() using 1
 {
 	if(BLDC_Previous_Cycle!= eleccycle)
 	{
@@ -232,20 +239,6 @@ void UpdateBLDCInverter() using 3
 			case 0:
 				break;
 		}
-		ADCCON0 &= 0XCF;
-		if((eleccycle == 1)||(eleccycle == 2))
-		{
-			ADCCON0 |= 0X00;	// PWM0 trig
-		}
-		else if((eleccycle == 3)||(eleccycle == 4))
-		{
-			ADCCON0 |= 0X10;	// PWM2 trig
-		}
-		else
-		{
-			ADCCON0 |= 0X20;	// PWM4 trig
-		}
-		
 		
 		EA = 1;
 		BLDC_Previous_Cycle= eleccycle;
