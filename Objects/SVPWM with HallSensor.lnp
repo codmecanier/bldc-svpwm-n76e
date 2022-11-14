@@ -1,7 +1,0 @@
-".\Objects\STARTUP.obj",
-".\Objects\SVPWM.obj",
-".\Objects\main.obj",
-".\Objects\BLDC with Hall.obj",
-".\Objects\3PhaseInverter.obj" 
-TO ".\Objects\SVPWM with HallSensor" 
-PRINT(".\Listings\SVPWM with HallSensor.m51") RAMSIZE(256) 

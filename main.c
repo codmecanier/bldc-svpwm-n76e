@@ -6,88 +6,6 @@
 #include "intrins.h"
 //#include "NTC.c"
 
-<<<<<<< Updated upstream
-/************  The Configuration area  ***************
- 
- 
- 
- 
-*****************************************************/
-
-bit SVPWMmode = 0;
-bit SVPReverseSpin = 1;
-
-const ElecAngleOffestCCW = 189;
-const StableCount = 4;
-const ElecAngleOffestCW = 219; // 238wm // 222
-unsigned char SVPAngleStep = 1;
-unsigned char SVPNextAngleStep = 1;
-unsigned char SpeedRippleLimitforSVP = 4;
-unsigned int SpeedLowLimitforSVP = 6000;
-unsigned int SatiSCyclesSwSVP = 0;
-unsigned char Stablecnt = 0;
-unsigned int SpeedCount = 0;
-unsigned char PrevoiusMechinalCycle = 0;
-unsigned int CalcElectricAngle = 0;
-unsigned int SVPDriveAngle = 0;
-unsigned char SVPWMCurPWM = 0;
-unsigned char ExecuteSVPBL_PWM = 0;
-unsigned int PulseCount = 0;
-unsigned int Previous1MechanicalDelay, Previous2MechanicalDelay, CurrentElectricAngle, PreviousElectricAngle;
-
-unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
-sbit debug1 = P0^2;
-
-#define FOSC            30000000UL
-#define BRT             (65536 - FOSC / 115200 / 4)
-
-bit busy;
-char wptr;
-char rptr;
-char buffer[16];
-
-void UartIsr() interrupt 4 using 1
-{
-    if (TI)
-    {
-        TI = 0;
-        busy = 0;
-    }
-    if (RI)
-    {
-        RI = 0;
-        buffer[wptr++] = SBUF;
-        wptr &= 0x0f;
-    }
-}
-
-void UartInit()
-{
- /*   SCON = 0x50;
-    T2L = BRT;
-    T2H = BRT >> 8;
-    AUXR = 0x15;
-    wptr = 0x00;
-    rptr = 0x00;
-    busy = 0;*/
-}
-
-void UartSend(char dat)
-{
-    while (busy);
-    busy = 1;
-    SBUF = dat;
-}
-
-void UartSendStr(char *p)
-{
-    while (*p)
-    {
-        UartSend(*p++);
-    }
-}
-
-=======
 unsigned char xdata StartUP_Process = 0;
 
 unsigned char xdata	STARTUP_FREQUENCY = 10;
@@ -169,7 +87,6 @@ const unsigned char BEMF_DCT_Params[6][3] = {
 	{2,1,0},
 	{2,0,1},
 };
->>>>>>> Stashed changes
 
 const unsigned char ADC_Sample_Sequence[]=
 {
@@ -179,6 +96,62 @@ const unsigned char ADC_Sample_Sequence[]=
 
 //unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
 sbit debug1 = P0^7;
+
+//#define FOSC            30000000UL
+//#define BRT             (65536 - FOSC / 115200 / 4)
+
+//bit busy;
+//char wptr;
+//char rptr;
+//char buffer[16];
+
+//void UartIsr() interrupt 4 using 1
+//{
+//    if (TI)
+//    {
+//        TI = 0;
+//        busy = 0;
+//    }
+//    if (RI)
+//    {
+//        RI = 0;
+//        buffer[wptr++] = SBUF;
+//        wptr &= 0x0f;
+//    }
+//}
+
+void UartInit()
+{
+ /*   SCON = 0x50;
+    T2L = BRT;
+    T2H = BRT >> 8;
+    AUXR = 0x15;
+    wptr = 0x00;
+    rptr = 0x00;
+    busy = 0;*/
+}
+
+//void UartSend(char dat)
+//{
+//    while (busy);
+//    busy = 1;
+//    SBUF = dat;
+//}
+
+//void UartSendStr(char *p)
+//{
+//    while (*p)
+//    {
+//        UartSend(*p++);
+//    }
+//}
+
+//void UART_Write_Int_Value(unsigned int num)
+//{
+//	UartSend(number[num%1000/100]);
+//	UartSend(number[num%100/10]);
+//	UartSend(number[num%10]);
+//}
 
 void TimerInit()
 {
@@ -251,8 +224,6 @@ void SetMotorSpin(unsigned char pwm, bit dir)
 	SetBLDCDirPWM(blpwm,dir);
 	SetSVPWMValue(pwm);
 	SVPReverseSpin = dir;
-<<<<<<< Updated upstream
-=======
 	BLDC_SNSLess_PWM = pwm;
 	BEMF_PWM_ON_Detect = pwm > 100;
 }
@@ -288,7 +259,6 @@ void ADC_CurrentShunt_Compare_Start() using 1
 	CShunt_ADC_Interrupt = 1;
 	EADC = 1;
 	//ADCCON0 |= 0X40;
->>>>>>> Stashed changes
 }
 
 
@@ -392,16 +362,6 @@ void PWM_Interrupu_Init()
 }
  
 
-<<<<<<< Updated upstream
-void UpdateSVPFreq(unsigned char th, unsigned char tl) using 3
-{
-	T3CON &= 0XE7;
-	RL3 = tl;
-	RH3 = th;
-	T3CON |= 0X08;
-}
-
-=======
 void UpdateSVPFreq(unsigned int n) using 3
 {
 	T3CON &= 0XE7;
@@ -419,7 +379,6 @@ void UpdateBLDC_Dly(unsigned int n) using 3
 	RH3 = ~(n >> 8);
 	T3CON |= 0X08;
 }
->>>>>>> Stashed changes
 
 void Input_Capture_Interrupt_ISR() interrupt 12 using 3
 {
@@ -590,9 +549,6 @@ void BLDC_StartUP_OnProcCalc() using 2
 	}	
 	else 
 	{
-<<<<<<< Updated upstream
-		if(Stablecnt >= 4)
-=======
 		UpdateBLDC_Dly(DelayMsBetweenCurrentElectricalCycle * 12);
 	}  	
 	if((UsedStartupTime > Accelerationtime))
@@ -607,7 +563,6 @@ void BLDC_StartUP_OnProcCalc() using 2
 		SetElecCycleU2(CurrentElectricCycle);
 		UpdateBLDCInverter();	
 		if(BEMF_PWM_ON_Detect)
->>>>>>> Stashed changes
 		{
 			ADC_CurrentShunt_Compare_Start();
 		}
@@ -641,11 +596,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 			BLDC_StartUP_OnProcCalc();
 		}
 	}
-<<<<<<< Updated upstream
-	else
-=======
 	if(ENABLE_SVPWM_FOR_SYNCM)
->>>>>>> Stashed changes
 	{
 		//These codes used only for SVPWM mode
 		if(SVPDriveAngle < 255-SVPAngleStep)
@@ -672,8 +623,6 @@ void PWM_Interr_ISR() interrupt 13 using 0
 }
 
 
-<<<<<<< Updated upstream
-=======
 
 void ADC_Interrupt_ISR() interrupt 11 using 1
 {
@@ -738,7 +687,6 @@ void Set_Currrent_Limit_Threshold(unsigned int th)
 	ADCMPL = th & 0xff;;
 }
 
->>>>>>> Stashed changes
 void ADCInit()
 {
 	Set_Currrent_Limit_Threshold(0xfff);
@@ -757,15 +705,6 @@ void main(void)
 {
 	unsigned int i;
 //	UartInit();
-<<<<<<< Updated upstream
-//  ES = 1;
-//  EA = 1;
-	Inverter_ControlGPIO_Init();
-	HallGpioInit();
-	ADCInit();
-	SetMotorSpin(0,1);
-	TimerInit();
-=======
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
 	BEMF_Gpio_ADCIN_Init();
@@ -778,7 +717,6 @@ void main(void)
 	
 	UpdateBLDC_Dly(418);
 	
->>>>>>> Stashed changes
 //	PWM_Interrupu_Init();
 	
 	
@@ -793,23 +731,13 @@ void main(void)
 //  UartSendStr("DAS02418");
 	while(1)
 	{
-<<<<<<< Updated upstream
-		for(i = 0;i < 255;i += 1)
-=======
 		for(i = 0;i < 254;i += 1)
->>>>>>> Stashed changes
 		{	
 			
 	//	BLDCTimerEventHandler();
 	//		UpdateBLDCInverter(i);
-<<<<<<< Updated upstream
-			delay(3000);
-
-	//	CalculateInverterVectorsWidth_Polar(i);
-=======
 
 			//CalculateInverterVectorsWidth_Polar(i);
->>>>>>> Stashed changes
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");
