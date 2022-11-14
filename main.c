@@ -17,11 +17,24 @@ unsigned int xdata LOCK_POSITION_TIME = 500	;
 unsigned int xdata LOCK_POSITION_PWM = 26	;  
 unsigned int xdata DIREACTION_CHANGE_DELAY = 400;	
 
+unsigned int xdata MAX_FREQUENCY = 4000;
+unsigned int xdata MIN_FREQUENCY = 1;
+unsigned int xdata Current_Frequency = 0;
+unsigned int xdata FREQUENCY_SECTION_CUT = 0;
+unsigned int xdata VF_RATIO_1 = 3;
+unsigned int xdata VF_RATIO_2 = 3;
+unsigned int xdata REFERENCE_DC_VOLT = 0;
+unsigned int xdata VF_ACCELERATION_HZS2 = 1000;
+unsigned int xdata VF_DECELERATION_HZS2 = 1000;
 
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
 bit ENABLE_SVPWM_FOR_SYNCM = 0;
 bit BLDC_SENSORLESS = 1;
+bit ASYNC_3_PHASE = 1;
+
+bit SVPWMmode = 1;
+bit SVPReverseSpin = 1;
 volatile bit BEMF_PWM_ON_Detect = 1;
 
 volatile bit data CShunt_ADC_Interrupt = 0;
@@ -79,6 +92,10 @@ unsigned char pdata BEMF_Volt_ADC_Channel = 0;
 #define NTC_ADC         2	
 #define EXTERNAL_ANALOG 5	
 
+void delay(unsigned int i)
+{
+	while(i--);
+}
 const unsigned char BEMF_DCT_Params[6][3] = {
 	{0,2,0},
 	{0,1,1},
@@ -372,6 +389,14 @@ void UpdateSVPFreq(unsigned int n) using 3
 	T3CON |= 0X08;
 }
 
+void SetASYNCSVPFTimerReg(unsigned int n)
+{
+	T3CON &= 0XE7;
+	RL3 = ~(n & 0xff);
+	RH3 = ~(n >> 8);
+	T3CON |= 0X08;
+}
+
 void UpdateBLDC_Dly(unsigned int n) using 3
 {
 	T3CON &= 0XE7;
@@ -599,7 +624,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 			BLDC_StartUP_OnProcCalc();
 		}
 	}
-	if(ENABLE_SVPWM_FOR_SYNCM)
+	if(ENABLE_SVPWM_FOR_SYNCM || ASYNC_3_PHASE)
 	{
 		//These codes used only for SVPWM mode
 		if(SVPDriveAngle < 255-SVPAngleStep)
@@ -635,32 +660,34 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 	ADCCON1 = 0X01;		//Enable ADC and Start Converting immediately
 	
 //	debug1 = !debug1;
-	
-	if(CShunt_ADC_Interrupt)
+	if(BLDC_SENSORLESS)
 	{
-		Current_SENSE_ADC_Value  = (ADCRH << 4) + ADCRL;
-		//  BEMF_PWM_ON_Detect
-		if(BEMF_PWM_ON_Detect)
+		if(CShunt_ADC_Interrupt)
 		{
-			ADCCON0 &= 0X70;
-			ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]) | 0x40;
+			Current_SENSE_ADC_Value  = (ADCRH << 4) + ADCRL;
+			//  BEMF_PWM_ON_Detect
+			if(BEMF_PWM_ON_Detect)
+			{
+				ADCCON0 &= 0X70;
+				ADCCON0 |= (0X03 + BEMF_DCT_Params[CurrentElectricCycle - 1][DC_CH]) | 0x40;
+			}
+			else
+			{
+				ADC_PWM_FallEdge_BEMF_Dct();
+			}
+			//Start ADC for DC_Volt Detection
+			adcbemfreg0s = (0X03 + BEMF_DCT_Params[CurrentElectricCycle  - 1][BEMF_CH]) | 0x40 ;
+			if(Adc_Smpl_Count < 1)
+				Adc_Smpl_Count += 1;
+			else
+				Adc_Smpl_Count = 0;
+			adcalterreg0s = ADC_Sample_Sequence[Adc_Smpl_Count] | 0x40 ;
+			if(!BEMF_PWM_ON_Detect)
+			{
+				return;
+			}
+			while(ADCS);
 		}
-		else
-		{
-			ADC_PWM_FallEdge_BEMF_Dct();
-		}
-		//Start ADC for DC_Volt Detection
-		adcbemfreg0s = (0X03 + BEMF_DCT_Params[CurrentElectricCycle  - 1][BEMF_CH]) | 0x40 ;
-		if(Adc_Smpl_Count < 1)
-			Adc_Smpl_Count += 1;
-		else
-			Adc_Smpl_Count = 0;
-		adcalterreg0s = ADC_Sample_Sequence[Adc_Smpl_Count] | 0x40 ;
-		if(!BEMF_PWM_ON_Detect)
-		{
-			return;
-		}
-		while(ADCS);
 	}
 	DCBUS_ADC_Value = (ADCRH << 4) + ADCRL;
 	ADCCON0 &= 0X70;
@@ -731,6 +758,7 @@ void main(void)
 	
 	debug1 = 1;
 	
+	SetSVPWMValue(92);
 //  UartSendStr("DAS02418");
 	while(1)
 	{
