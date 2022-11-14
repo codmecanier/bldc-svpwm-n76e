@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   51          BEMF_SMPL       ,
   52          CALCULATE_BEMF  ,
   53          NTC_ADC         , 
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 2   
 
   54          DC_VOLTAGE_SMPL ,
   55          BEMF_SMPL       ,
@@ -126,7 +126,7 @@ line level    source
  113          {
  114   1        UartSend(number[num%1000/100]);
  115   1        UartSend(number[num%100/10]);
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 3   
 
  116   1        UartSend(number[num%10]);
  117   1      }
@@ -190,7 +190,7 @@ line level    source
  175   1      }
  176          
  177          void SetMotorSpin(unsigned char pwm, bit dir)
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 4   
 
  178          {
  179   1        unsigned int blpwm;
@@ -254,7 +254,7 @@ line level    source
  237   3            i = 0;
  238   3          break;
  239   3          }
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 5   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 5   
 
  240   2          case 0x49:
  241   2          {
@@ -318,7 +318,7 @@ line level    source
  299   1        Previous1CaptureCnt = Previous1MechanicalDelay;
  300   1        if(SVP_Angle_Delay > 15)
  301   1        {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 6   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 6   
 
  302   2        //  ElecAngleOffestCW++;
  303   2          SVP_Angle_Delay = 0;
@@ -382,7 +382,7 @@ line level    source
  360   2        }
  361   1      /*  if(Previous2MechanicalDelay < Previous1MechanicalDelay)
  362   1        {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 7   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 7   
 
  363   1          if(ElecAngleOffestCW < 255)
  364   1          {
@@ -446,7 +446,7 @@ line level    source
  419          
  420          void PWM_Interr_ISR() interrupt 13 using 2
  421          {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 8   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 8   
 
  422   1        PWMF = 0;
  423   1      }
@@ -510,7 +510,7 @@ line level    source
  480   3            case DC_VOLTAGE_SMPL:
  481   3            {
  482   4              Determine_BEMF_Detect_Channel(CurrentElectricCycle,1);
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 9   
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 9   
 
  483   4              break;
  484   4            }
@@ -574,7 +574,7 @@ line level    source
  542          
  543          void ADCInit()
  544          {
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 10  
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 10  
 
  545   1        Set_Currrent_Limit_Threshold(0xfff);
  546   1        ADC_CurrentShunt_Compare_Start(CurrentElectricCycle);
@@ -638,7 +638,7 @@ line level    source
  604   3                UartSendStr("HALL 2\r\n");break;
  605   3              case 3:
  606   3                UartSendStr("HALL 3\r\n");break;
-C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 00:17:51 PAGE 11  
+C51 COMPILER V9.59.0.0   MAIN                                                              02/23/2019 01:22:21 PAGE 11  
 
  607   3              case 4:
  608   3                UartSendStr("HALL 4\r\n");break;

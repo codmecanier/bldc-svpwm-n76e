@@ -7,6 +7,7 @@ Objects/
 Listings/
 Objects/*
 Listings/*
+*.lst
 
 #Debug middlefile
 Debug/*
@@ -759,3 +760,4 @@ cython_debug/
 #.idea/
 Objects/DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.build_log.htm
 Objects/DAS02418 MultiFuncMotorPrgm N76E003 SVPWM BLDC ACIM.build_log.htm
+*.lst
