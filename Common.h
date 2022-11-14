@@ -1,10 +1,14 @@
+#ifndef __n76e003_common___
+#define __n76e003_common___
+
+
 typedef bit                   BIT;
-typedef unsigned char         UINT8;
-typedef unsigned int          UINT16;
+typedef uint8_t         UINT8;
+typedef uint16_t          UINT16;
 typedef unsigned long         UINT32;
 
-typedef unsigned char         uint8_t;
-typedef unsigned int          uint16_t;
+typedef uint8_t         uint8_t;
+typedef uint16_t          uint16_t;
 typedef unsigned long         uint32_t;
 
 
@@ -35,3 +39,6 @@ UINT8 Receive_Data_From_UART1(void);
 void  InitialUART1(UINT32 u32Baudrate);
 
 extern bit BIT_TMP;
+
+
+#endif

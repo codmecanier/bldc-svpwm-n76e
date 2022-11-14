@@ -5,11 +5,11 @@ bit PhaseU_Target;
 bit PhaseV_Target;
 bit PhaseW_Target;
 
-unsigned int T07,T1,T2,PWMB,PWMM,PWMS;
+uint16_t T07,T1,T2,PWMB,PWMM,PWMS;
 
 bit SVPFirstHalfSector;
 
-unsigned char code SVPList1[]={0,
+uint8_t code SVPList1[]={0,
 6,12,19,25,31,
 37,43,50,56,62,
 68,74,80,86,92,
@@ -63,7 +63,7 @@ unsigned char code SVPList1[]={0,
 29,23,17,11,4,
 };
 
-unsigned char code SVPList2[]={220,
+uint8_t code SVPList2[]={220,
 223,226,229,231,234,
 236,238,241,242,244,
 246,247,249,250,251,
@@ -119,7 +119,7 @@ unsigned char code SVPList2[]={220,
 };
 
 
-unsigned char xdata T1Array[]={0,
+uint8_t xdata T1Array[]={0,
 6,12,19,25,31,
 37,43,50,56,62,
 68,74,80,86,92,
@@ -172,7 +172,7 @@ unsigned char xdata T1Array[]={0,
 60,54,48,42,36,
 29,23,17,11,4};
 
-unsigned char xdata T2Array[]={220,
+uint8_t xdata T2Array[]={220,
 223,226,229,231,234,
 236,238,241,242,244,
 246,247,249,250,251,
@@ -226,9 +226,9 @@ unsigned char xdata T2Array[]={220,
 233,231,228,225,222,
 };
 
-void SetSVPWMValue(unsigned char length)
+void SetSVPWMValue(uint8_t length)
 {
-	unsigned char i = 0;
+	uint8_t i = 0;
 	for(i = 0;i < 255;i += 1)
 	{	
 		T1Array[i] = ((int)SVPList1[i] * length) >> 8;
@@ -236,7 +236,7 @@ void SetSVPWMValue(unsigned char length)
 	}
 }
 
-void CalculateInverterVectorsWidth_Polar(unsigned char deg) using 2
+void CalculateInverterVectorsWidth_Polar(uint8_t deg) using 2
 {
 	T1 = T1Array[deg];
 	T2 = T2Array[deg];

@@ -1,5 +1,5 @@
-#ifndef __NTC_H
-#define __NTC_H	
+#ifndef __NTC_H____
+#define __NTC_H____
 #include "math.h"
 
 

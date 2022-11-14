@@ -6,19 +6,19 @@
 
 #define PhaseSwitchCount 5
 
-unsigned int data Prev_bemf;
+uint16_t data Prev_bemf;
 
-unsigned char data Last_Rtn = 0;
+uint8_t data Last_Rtn = 0;
 
 bit Zero_Cross_Flag = 0;
 
-unsigned char data PreviousBEMF_CH;
-unsigned char data BEMF_Slope_Count;
-unsigned int data Switch_Count = 0;
-unsigned int data Zero_Cross_Count = 0;
-unsigned int pdata Period_Count = 0;
+uint8_t data PreviousBEMF_CH;
+uint8_t data BEMF_Slope_Count;
+uint16_t data Switch_Count = 0;
+uint16_t data Zero_Cross_Count = 0;
+uint16_t pdata Period_Count = 0;
 
-const unsigned char BEMF_DCT_Params1[6][3] = {
+const uint8_t BEMF_DCT_Params1[6][3] = {
 	{0,2,0},
 	{0,1,1},
 	{1,0,0},
@@ -27,10 +27,10 @@ const unsigned char BEMF_DCT_Params1[6][3] = {
 	{2,0,1},
 };
 
-unsigned char BEMF_Calculate(unsigned char eleccycle,unsigned int dcvolt,unsigned int bemf,bit pwmondct) using 1
+uint8_t BEMF_Calculate(uint8_t eleccycle,uint16_t dcvolt,uint16_t bemf,bit pwmondct) using 1
 {	
 	bit bemf_cmp = 0;
-	unsigned char eleci;
+	uint8_t eleci;
 	eleccycle -= 1;	
 	if(!pwmondct)
 	{

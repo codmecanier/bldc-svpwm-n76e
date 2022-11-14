@@ -1,10 +1,11 @@
+#ifndef __BLDC_Sensorless__
+#define __BLDC_Sensorless__
+
 void BEMF_Gpio_ADCIN_Init();
 
-unsigned char BEMF_Calculate(unsigned char eleccycle,unsigned int dcvolt,unsigned int bemf,bit pwmondct);
+uint8_t BEMF_Calculate(uint8_t eleccycle,uint16_t dcvolt,uint16_t bemf,bit pwmondct);
 
 #define SAMPLE_BUFFER_LENGTH 2
-
-
 
 #define BLDC_Stop 0
 #define BLDC_Align 1
@@ -16,3 +17,6 @@ unsigned char BEMF_Calculate(unsigned char eleccycle,unsigned int dcvolt,unsigne
 #define DC_CH 0
 #define BEMF_CH 1
 #define SLOPE 2
+
+
+#endif

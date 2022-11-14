@@ -1,6 +1,11 @@
 
+#ifndef __MC_SVPWM_TABLE__
+#define __MC_SVPWM_TABLE__
+
 #define DC_Compensation 1
 
-void CalculateInverterVectorsWidth_Polar(unsigned int deg);
+void CalculateInverterVectorsWidth_Polar(uint16_t deg);
 
-void SetSVPWMValue(unsigned char length);
+void SetSVPWMValue(uint8_t length);
+
+#endif

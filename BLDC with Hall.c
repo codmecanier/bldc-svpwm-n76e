@@ -10,35 +10,35 @@ sbit P13 = P1^3;
 sbit P14 = P1^4;
 sbit P15 = P1^5;
 
-unsigned char BLDCSpeed;
-unsigned char eleccycle = 0;
+uint8_t BLDCSpeed;
+uint8_t eleccycle = 0;
 
-static unsigned char BLDC_Previous_Cycle = 0;
+static uint8_t BLDC_Previous_Cycle = 0;
 
-void SetBLDCDirPWM(unsigned char pwm, bit dir)
+void SetBLDCDirPWM(uint8_t pwm, bit dir)
 {
 	BLDCReverse = dir;
 	BLDCSpeed = pwm;
 }
 
-void SetBLDCDirPWMU2(unsigned char pwm, bit dir) using 2
+void SetBLDCDirPWMU2(uint8_t pwm, bit dir) using 2
 {
 	BLDCReverse = dir;
 	BLDCSpeed = pwm;
 }
 
 
-void SetElecCycleU2(unsigned char i) using 2
+void SetElecCycleU2(uint8_t i) using 2
 {
 	eleccycle = i;
 }
 
-void SetElecCycleU3(unsigned char i) using 3
+void SetElecCycleU3(uint8_t i) using 3
 {
 	eleccycle = i;
 }
 
-void SetBLDCPWM(unsigned char pwm) using 2
+void SetBLDCPWM(uint8_t pwm) using 2
 {
 	BLDCSpeed = pwm;
 }
@@ -46,7 +46,7 @@ void SetBLDCPWM(unsigned char pwm) using 2
 bit GetBLDCDirection()
 {return BLDCReverse;}
 
-unsigned char GetBLDCDirectionU3() using 3
+uint8_t GetBLDCDirectionU3() using 3
 {return BLDCReverse;}
 
 void UpdateHall() using 2
@@ -72,7 +72,7 @@ void HallGpioInit()
 	HCPort = 1;
 }
 
-unsigned char DetermineCurrentElecCycle(bit reverse) using 3
+uint8_t DetermineCurrentElecCycle(bit reverse) using 3
 {	
 	if(HAPort)
 	{

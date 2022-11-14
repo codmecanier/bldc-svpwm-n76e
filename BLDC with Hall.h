@@ -1,12 +1,15 @@
+#ifndef __BLDC_W_HALL__
+#define __BLDC_W_HALL__
+
 #define HAPort P15
 #define HBPort P13 
 #define HCPort P14
 
-unsigned char DetermineCurrentElecCycle(bit reverse);
+uint8_t DetermineCurrentElecCycle(bit reverse);
 
 void UpdateHall();
 
-void SetBLDCDirPWM(unsigned char pwm, bit dir);
+void SetBLDCDirPWM(uint8_t pwm, bit dir);
 
 void HallGpioInit();
 
@@ -15,12 +18,15 @@ void UpdateBLDCInverter();
 
 void BLDCTimerEventHandler();
 
-void SetBLDCPWM(unsigned char pwm);
+void SetBLDCPWM(uint8_t pwm);
 
-unsigned char GetBLDCDirectionU3();
+uint8_t GetBLDCDirectionU3();
 
-void SetElecCycleU3(unsigned char i);
+void SetElecCycleU3(uint8_t i);
 
-void SetElecCycleU2(unsigned char i);
+void SetElecCycleU2(uint8_t i);
 
-void SetBLDCDirPWMU2(unsigned char pwm, bit dir);
+void SetBLDCDirPWMU2(uint8_t pwm, bit dir);
+
+
+#endif

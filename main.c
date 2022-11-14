@@ -4,28 +4,29 @@
 #include <BLDC with Hall.h>
 #include <BLDC_Sensorless.h>
 #include "intrins.h"
+#include <stdint.h>
 //#include "NTC.c"
 
-unsigned char xdata StartUP_Process = 0;
+uint8_t xdata StartUP_Process = 0;
 
-unsigned char xdata	STARTUP_FREQUENCY = 10;
-unsigned char xdata	STARTUP_END_FREQUENCY = 70;
-unsigned char xdata	STARTUP_PWM =	23;
-unsigned char xdata	STARTUP_END_PWM = 50;
-unsigned int xdata ACCELERATION_TIME = 1000;
-unsigned int xdata LOCK_POSITION_TIME = 500	;  
-unsigned int xdata LOCK_POSITION_PWM = 26	;  
-unsigned int xdata DIREACTION_CHANGE_DELAY = 400;	
+uint8_t xdata	STARTUP_FREQUENCY = 10;
+uint8_t xdata	STARTUP_END_FREQUENCY = 70;
+uint8_t xdata	STARTUP_PWM =	23;
+uint8_t xdata	STARTUP_END_PWM = 50;
+uint16_t xdata ACCELERATION_TIME = 1000;
+uint16_t xdata LOCK_POSITION_TIME = 500	;  
+uint16_t xdata LOCK_POSITION_PWM = 26	;  
+uint16_t xdata DIREACTION_CHANGE_DELAY = 400;	
 
-unsigned int xdata MAX_FREQUENCY = 4000;
-unsigned int xdata MIN_FREQUENCY = 1;
-unsigned int xdata Current_Frequency = 0;
-unsigned int xdata FREQUENCY_SECTION_CUT = 0;
-unsigned int xdata VF_RATIO_1 = 3;
-unsigned int xdata VF_RATIO_2 = 3;
-unsigned int xdata REFERENCE_DC_VOLT = 0;
-unsigned int xdata VF_ACCELERATION_HZS2 = 1000;
-unsigned int xdata VF_DECELERATION_HZS2 = 1000;
+uint16_t xdata MAX_FREQUENCY = 4000;
+uint16_t xdata MIN_FREQUENCY = 1;
+uint16_t xdata Current_Frequency = 0;
+uint16_t xdata FREQUENCY_SECTION_CUT = 0;
+uint16_t xdata VF_RATIO_1 = 3;
+uint16_t xdata VF_RATIO_2 = 3;
+uint16_t xdata REFERENCE_DC_VOLT = 0;
+uint16_t xdata VF_ACCELERATION_HZS2 = 1000;
+uint16_t xdata VF_DECELERATION_HZS2 = 1000;
 
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
@@ -39,64 +40,64 @@ volatile bit BEMF_PWM_ON_Detect = 1;
 
 volatile bit data CShunt_ADC_Interrupt = 0;
 
-unsigned char Adc_Smpl_Count = 0;
+uint8_t Adc_Smpl_Count = 0;
 
-unsigned int xdata  DelayMsBetweenCurrentElectricalCycle = 0;
-unsigned int xdata  UsedStartupTime = 0; 
-unsigned int xdata  Accelerationtime = 0;
-unsigned int xdata  AccelerationFrequency = 0;	 
-unsigned int  xdata AccelerationPWM = 0;
+uint16_t xdata  DelayMsBetweenCurrentElectricalCycle = 0;
+uint16_t xdata  UsedStartupTime = 0; 
+uint16_t xdata  Accelerationtime = 0;
+uint16_t xdata  AccelerationFrequency = 0;	 
+uint16_t  xdata AccelerationPWM = 0;
 unsigned long xdata  CurrentFrequency = 0;
 
-unsigned char pdata BLDC_SNSLess_PWM = 0;
-unsigned char adcbemfreg0s,adcalterreg0s,bcrtnv = 0;
+uint8_t pdata BLDC_SNSLess_PWM = 0;
+uint8_t adcbemfreg0s,adcalterreg0s,bcrtnv = 0;
 
-unsigned char pdata ElecAngleOffestCCW = 189;
-unsigned char pdata StableCount = 10;
-unsigned char pdata ElecAngleOffestCW = 215; // 238wm // 222
-unsigned char pdata SVPAngleStep = 1;
-unsigned char pdata SVPNextAngleStep = 1;
-unsigned char pdata SpeedRippleLimitforSVP = 2;
-unsigned int pdata SpeedLowLimitforSVP = 6000;
-unsigned int pdata SatiSCyclesSwSVP = 0;
-unsigned char pdata Stablecnt = 0;
-unsigned int pdata SpeedCount = 0;
-unsigned char pdata PrevoiusMechinalCycle = 0;
-unsigned int pdata CalcElectricAngle = 0;
-unsigned int pdata  SVPDriveAngle = 0;
-unsigned char pdata SVPWMCurPWM = 0;
-unsigned char xdata ExecuteSVPBL_PWM = 0;
-unsigned int pdata PulseCount = 0;
-unsigned char pdata SVP_Angle_Delay = 0;
-volatile unsigned int pdata Previous1MechanicalDelay,Previous2MechanicalDelay;
-unsigned int pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,Previous4CaptureCnt;
-unsigned int pdata CurrentElectricAngle, PreviousElectricAngle;
+uint8_t pdata ElecAngleOffestCCW = 189;
+uint8_t pdata StableCount = 10;
+uint8_t pdata ElecAngleOffestCW = 215; // 238wm // 222
+uint8_t pdata SVPAngleStep = 1;
+uint8_t pdata SVPNextAngleStep = 1;
+uint8_t pdata SpeedRippleLimitforSVP = 2;
+uint16_t pdata SpeedLowLimitforSVP = 6000;
+uint16_t pdata SatiSCyclesSwSVP = 0;
+uint8_t pdata Stablecnt = 0;
+uint16_t pdata SpeedCount = 0;
+uint8_t pdata PrevoiusMechinalCycle = 0;
+uint16_t pdata CalcElectricAngle = 0;
+uint16_t pdata  SVPDriveAngle = 0;
+uint8_t pdata SVPWMCurPWM = 0;
+uint8_t xdata ExecuteSVPBL_PWM = 0;
+uint16_t pdata PulseCount = 0;
+uint8_t pdata SVP_Angle_Delay = 0;
+volatile uint16_t pdata Previous1MechanicalDelay,Previous2MechanicalDelay;
+uint16_t pdata Previous1CaptureCnt,Previous2CaptureCnt,Previous3CaptureCnt,Previous4CaptureCnt;
+uint16_t pdata CurrentElectricAngle, PreviousElectricAngle;
 
-unsigned int data External_Analog_ADC_Value = 0;
-unsigned int data Current_SENSE_ADC_Value = 0;
-unsigned int data BEMF_ADC_Value = 0;
-unsigned int data DCBUS_ADC_Value = 0;
+uint16_t data External_Analog_ADC_Value = 0;
+uint16_t data Current_SENSE_ADC_Value = 0;
+uint16_t data BEMF_ADC_Value = 0;
+uint16_t data DCBUS_ADC_Value = 0;
 
-volatile unsigned char pdata CurrentElectricCycle = 0;
-unsigned char ADC_SampleTimes = 0;
-unsigned char pdata BLDC_Sensorless_Status = 0;
+volatile uint8_t pdata CurrentElectricCycle = 0;
+uint8_t ADC_SampleTimes = 0;
+uint8_t pdata BLDC_Sensorless_Status = 0;
 
 
-unsigned char pdata DC_Volt_ADC_Channel = 0;
-unsigned char pdata BEMF_Volt_ADC_Channel = 0;
+uint8_t pdata DC_Volt_ADC_Channel = 0;
+uint8_t pdata BEMF_Volt_ADC_Channel = 0;
 
-//unsigned int NTC_ADC_Value;
+//uint16_t NTC_ADC_Value;
 
 #define DC_VOLTAGE_SMPL 0
 #define BEMF_SMPL       1
 #define NTC_ADC         2	
 #define EXTERNAL_ANALOG 5	
 
-void delay(unsigned int i)
+void delay(uint16_t i)
 {
 	while(i--);
 }
-const unsigned char BEMF_DCT_Params[6][3] = {
+const uint8_t BEMF_DCT_Params[6][3] = {
 	{0,2,0},
 	{0,1,1},
 	{1,0,0},
@@ -105,13 +106,13 @@ const unsigned char BEMF_DCT_Params[6][3] = {
 	{2,0,1},
 };
 
-const unsigned char ADC_Sample_Sequence[]=
+const uint8_t ADC_Sample_Sequence[]=
 {
 	NTC_ADC,
 	EXTERNAL_ANALOG ,	
 };
 
-//unsigned char code number[]={'0','1','2','3','4','5','6','7','8','9',};	
+//uint8_t code number[]={'0','1','2','3','4','5','6','7','8','9',};	
 sbit debug1 = P0^7;
 
 //#define FOSC            30000000UL
@@ -163,7 +164,7 @@ void UartInit()
 //    }
 //}
 
-//void UART_Write_Int_Value(unsigned int num)
+//void UART_Write_Int_Value(uint16_t num)
 //{
 //	UartSend(number[num%1000/100]);
 //	UartSend(number[num%100/10]);
@@ -234,9 +235,9 @@ void TimerInit()
 	EA = 1;
 }
 
-void SetMotorSpin(unsigned char pwm, bit dir)
+void SetMotorSpin(uint8_t pwm, bit dir)
 {
-	unsigned int blpwm;
+	uint16_t blpwm;
 	blpwm = pwm;
 	SetBLDCDirPWM(blpwm,dir);
 	SetSVPWMValue(pwm);
@@ -278,7 +279,7 @@ void ADC_CurrentShunt_Compare_Start() using 1
 	//ADCCON0 |= 0X40;
 }
 
-// GPIO ÉÏÉýÑØÏÂ½µÑØÖÐ¶Ïº¯Êý
+// GPIO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½Ð¶Ïºï¿½ï¿½ï¿½
 void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge triggered interrupt
 {
 	// 8 PIFs corresponds to eight GPIO interrupt sources independently
@@ -321,7 +322,7 @@ void Timer0_ISR() interrupt 1  // Timer O Used for Speed ramping now
 // Set the SVPWM Precision according to the current perios
 void SetSpeedRange_SVPrecision() using 1   
 {
-	unsigned char i;
+	uint8_t i;
 	switch(T2MOD)	// First read out the Period under differnet Timer scaling factors
 	{
 		case 0x69:
@@ -381,7 +382,7 @@ void PWM_Interrupu_Init()
 }
  
 
-void UpdateSVPFreq(unsigned int n) using 3
+void UpdateSVPFreq(uint16_t n) using 3
 {
 	T3CON &= 0XE7;
 	RL3 = ~(n & 0xff);
@@ -389,7 +390,7 @@ void UpdateSVPFreq(unsigned int n) using 3
 	T3CON |= 0X08;
 }
 
-void SetASYNCSVPFTimerReg(unsigned int n)
+void SetASYNCSVPFTimerReg(uint16_t n)
 {
 	T3CON &= 0XE7;
 	RL3 = ~(n & 0xff);
@@ -397,7 +398,7 @@ void SetASYNCSVPFTimerReg(unsigned int n)
 	T3CON |= 0X08;
 }
 
-void UpdateBLDC_Dly(unsigned int n) using 3
+void UpdateBLDC_Dly(uint16_t n) using 3
 {
 	T3CON &= 0XE7;
 	T3CON &= 0xF8;
@@ -711,7 +712,7 @@ void ADC_Interrupt_ISR() interrupt 11 using 1
 //	debug1 = 0;
 }
 
-void Set_Currrent_Limit_Threshold(unsigned int th)
+void Set_Currrent_Limit_Threshold(uint16_t th)
 {
 	ADCMPH = th >> 8; //current limit
 	ADCMPL = th & 0xff;;
@@ -733,7 +734,7 @@ void BLDC_SNSless_Parms_Calc()
 
 void main(void)
 {
-	unsigned int i;
+	uint16_t i;
 //	UartInit();
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();

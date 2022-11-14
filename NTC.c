@@ -5,7 +5,7 @@ const float code NTC_Rp=10000.0; //10K
 const float code NTC_T2 = (273.15+25.0);//T2
 const float code NTC_Bx = 3950.0;//B
 const float code NTC_Ka = 273.15;
-unsigned int xdata NTC_ADC_Value = 0;
+uint16_t xdata NTC_ADC_Value = 0;
 
 float Get_Temperature(unsigned long NTC_Rt)
 {

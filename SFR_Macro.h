@@ -1,3 +1,5 @@
+#ifndef __N76E003_SFR_MACRO__
+#define ___N76E003_SFR_MACRO__
 
 /**** P0		80H *****/
 #define set_P00			P00		=		1
@@ -1152,7 +1154,7 @@
 #define clr_PT3H    EIPH1   &= ~SET_BIT1
 #define clr_PSH_1   EIPH1   &= ~SET_BIT0
 
-
+#endif
 
 
 
