@@ -4,6 +4,8 @@
 
 #define DC_Compensation 1
 
+#include "typedef.h"
+
 void CalculateInverterVectorsWidth_Polar(uint16_t deg);
 
 void SetSVPWMValue(uint8_t length);

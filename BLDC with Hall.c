@@ -1,14 +1,15 @@
 #include "N76E003.h"
-#include <stdint.h>
+//#include <stdint.h>
 #include "BLDC with Hall.h"
 #include "3PhaseInverter.h"
+#include "typedef.h"
 
 bit BLDCReverse = 1;
 bit HA,HB,HC;
 bit Hall_Mode_60deg = 1;
 
-sbit P13 = P1^3;
-sbit P14 = P1^4;
+//sbit P13 = P1^3;
+//sbit P14 = P1^4;
 sbit P15 = P1^5;
 
 uint8_t BLDCSpeed;

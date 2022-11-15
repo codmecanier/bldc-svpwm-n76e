@@ -1,6 +1,8 @@
 #ifndef __BLDC_Sensorless__
 #define __BLDC_Sensorless__
 
+#include "typedef.h"
+
 void BEMF_Gpio_ADCIN_Init();
 
 uint8_t BEMF_Calculate(uint8_t eleccycle,uint16_t dcvolt,uint16_t bemf,bit pwmondct);

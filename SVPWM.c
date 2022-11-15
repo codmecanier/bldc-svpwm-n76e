@@ -1,4 +1,5 @@
 #include "SVPWM.h"
+#include "typedef.h"
 #include "3PhaseInverter.h"
 
 bit PhaseU_Target;

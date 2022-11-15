@@ -5,7 +5,7 @@
 #include "BLDC_Sensorless.h"
 #include "mc_config.h"
 #include <intrins.h>
-#include <stdint.h>
+//#include <stdint.h>
 //#include "NTC.c"
 
 uint8_t xdata StartUP_Process = 0;
@@ -24,7 +24,7 @@ uint16_t xdata DIREACTION_CHANGE_DELAY = DEFAULT_DIREACTION_CHANGE_DELAY;
 volatile bit BEMF_PWM_ON_Detect = 1;
 #endif
 
-#ifdef CFG_ACIM  //异步电机配置区
+#ifdef CFG_ACIM  //异步电机配置�?
 uint16_t xdata MAX_FREQUENCY = DEFAULT_VVVF_MAX_FREQUENCY;
 uint16_t xdata MIN_FREQUENCY = DEFAULT_VVVF_MIN_FREQUENCY;
 uint16_t xdata Current_Frequency = 0;
@@ -39,13 +39,11 @@ uint16_t xdata VF_DECELERATION_HZS2 = DEFAULT_VVVF_DECELERATION_HZS2;
 #ifdef CFG_ENABLE_SVPWM
 bit SVPWMmode = 0;
 bit SVPReverseSpin = 1;
-bit ENABLE_SVPWM_FOR_SYNCM = 0;
-bit SVPWMmode = 1;
-bit SVPReverseSpin = 1;
+bit ENABLE_SVPWM_FOR_SYNCM = 0; 
 #endif
 
-bit BLDC_SENSORLESS = 1;
-bit ASYNC_3_PHASE = 1;
+bit BLDC_SENSORLESS = 0;
+bit ASYNC_3_PHASE = 0;
 
 volatile bit data CShunt_ADC_Interrupt = 0;
 
@@ -301,7 +299,7 @@ void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge trigge
 		PIF &= 0x00;
 		//These codes used only for Square Wave BLDC Drive
 		//if(!BLDC_SENSORLESS && !SVPWMmode)
-		if(!0 && !SVPWMmode)
+		if(SVPWMmode == 0)
 		{
 			CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
 			SetElecCycleU3(CurrentElectricCycle);
@@ -654,7 +652,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 		{		
 				if(SVPReverseSpin)
 					CalcElectricAngle = 255 - CalcElectricAngle;
-				CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+				//CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
 		}
 	}
 }
@@ -779,7 +777,7 @@ void main(void)
 		for(i = 0;i < 254;i += 1)
 		{	
 			
-	//	BLDCTimerEventHandler();
+	//	BLDCTimerEventHandler(); 
 	//		UpdateBLDCInverter(i);
 
 			//CalculateInverterVectorsWidth_Polar(i);

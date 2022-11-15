@@ -1,6 +1,8 @@
 #ifndef __BLDC_W_HALL__
 #define __BLDC_W_HALL__
 
+#include "typedef.h"
+
 #define HAPort P15
 #define HBPort P13 
 #define HCPort P14

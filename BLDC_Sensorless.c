@@ -1,5 +1,5 @@
 #include "N76E003.h"
-#include <stdint.h>
+//#include <stdint.h>
 #include "BLDC_Sensorless.h"
 
 #define MagDecayPulseDct 3		//Magnent Decay Detect threshold

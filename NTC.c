@@ -1,5 +1,8 @@
 #include "math.h"
 #include "NTC.h"
+//#include <reg52.h>
+//#inlcude <stdint.h>
+#include "typedef.h"
 
 const float code NTC_Rp=10000.0; //10K
 const float code NTC_T2 = (273.15+25.0);//T2
