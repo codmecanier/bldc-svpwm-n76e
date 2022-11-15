@@ -6,8 +6,8 @@
 
 #include "typedef.h"
 
-void CalculateInverterVectorsWidth_Polar(uint16_t deg);
+void ExecuteSVPWMatGivenAngle(uint16_t deg);
 
-void SetSVPWMValue(uint8_t length);
+void CalculateSVPWMtableWithGivenVctLength(uint8_t length);
 
 #endif

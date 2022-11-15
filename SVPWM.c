@@ -227,7 +227,7 @@ uint8_t xdata T2Array[]={220,
 233,231,228,225,222,
 };
 
-void SetSVPWMValue(uint8_t length)
+void CalculateSVPWMtableWithGivenVctLength(uint8_t length)
 {
 	uint8_t i = 0;
 	for(i = 0;i < 255;i += 1)
@@ -237,7 +237,7 @@ void SetSVPWMValue(uint8_t length)
 	}
 }
 
-void CalculateInverterVectorsWidth_Polar(uint8_t deg) using 2
+void ExecuteSVPWMatGivenAngle(uint8_t deg) using 2
 {
 	T1 = T1Array[deg];
 	T2 = T2Array[deg];

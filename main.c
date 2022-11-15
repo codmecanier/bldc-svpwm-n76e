@@ -24,7 +24,7 @@ uint16_t xdata DIREACTION_CHANGE_DELAY = DEFAULT_DIREACTION_CHANGE_DELAY;
 volatile bit BEMF_PWM_ON_Detect = 1;
 #endif
 
-#ifdef CFG_ACIM  //异步电机配置�?
+#ifdef CFG_ACIM  //异步电机配置�?
 uint16_t xdata MAX_FREQUENCY = DEFAULT_VVVF_MAX_FREQUENCY;
 uint16_t xdata MIN_FREQUENCY = DEFAULT_VVVF_MIN_FREQUENCY;
 uint16_t xdata Current_Frequency = 0;
@@ -251,7 +251,7 @@ void SetMotorSpin(uint8_t pwm, bit dir)
 	uint16_t blpwm;
 	blpwm = pwm;
 	SetBLDCDirPWM(blpwm,dir);
-	SetSVPWMValue(pwm);
+	CalculateSVPWMtableWithGivenVctLength(pwm);
 	SVPReverseSpin = dir;
 	BLDC_SNSLess_PWM = pwm;
 	BEMF_PWM_ON_Detect = pwm > 100;
@@ -290,7 +290,9 @@ void ADC_CurrentShunt_Compare_Start() using 1
 	//ADCCON0 |= 0X40;
 }
 
-// GPIO �������½����жϺ���
+extern bit BLDCReverse;
+extern uint8_t BLDCcurrentElecCycle;
+// GPIO 上升沿或下降沿中断
 void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge triggered interrupt
 {
 	// 8 PIFs corresponds to eight GPIO interrupt sources independently
@@ -301,8 +303,8 @@ void Pin_Interrupt_ISR() interrupt 7  // GPIO Rising edge or falling edge trigge
 		//if(!BLDC_SENSORLESS && !SVPWMmode)
 		if(SVPWMmode == 0)
 		{
-			CurrentElectricCycle = DetermineCurrentElecCycle(GetBLDCDirectionU3());
-			SetElecCycleU3(CurrentElectricCycle);
+			CurrentElectricCycle = DetermineCurrentElecCycle(BLDCReverse);
+			BLDCcurrentElecCycle = CurrentElectricCycle;
 			UpdateBLDCInverter();		
 			ADC_CurrentShunt_Compare_Start();
 		}
@@ -652,7 +654,7 @@ void Timer3_Interr_ISR() interrupt 16 using 2
 		{		
 				if(SVPReverseSpin)
 					CalcElectricAngle = 255 - CalcElectricAngle;
-				//CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+				//ExecuteSVPWMatGivenAngle(CalcElectricAngle);
 		}
 	}
 }
@@ -736,7 +738,7 @@ void ADCInit()
 	EADC = 1;
 }
 
-void BLDC_SNSless_Parms_Calc()
+void CalculateBLDCsensorlessParameters()
 {
 	Accelerationtime = ACCELERATION_TIME * 10;
 	AccelerationFrequency = STARTUP_END_FREQUENCY - STARTUP_FREQUENCY;
@@ -753,7 +755,7 @@ void main(void)
 	ADCInit();
 	SetMotorSpin(30,1);
 	TimerInit();
-	BLDC_SNSless_Parms_Calc();
+	CalculateBLDCsensorlessParameters();
 	
 	BLDC_Sensorless_Status = BLDC_Startup;
 	
@@ -770,7 +772,7 @@ void main(void)
 	
 	debug1 = 1;
 	
-	SetSVPWMValue(92);
+	CalculateSVPWMtableWithGivenVctLength(92);
 //  UartSendStr("DAS02418");
 	while(1)
 	{
@@ -780,7 +782,7 @@ void main(void)
 	//	BLDCTimerEventHandler(); 
 	//		UpdateBLDCInverter(i);
 
-			//CalculateInverterVectorsWidth_Polar(i);
+			//ExecuteSVPWMatGivenAngle(i);
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");

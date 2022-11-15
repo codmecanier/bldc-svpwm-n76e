@@ -22,8 +22,6 @@ void BLDCTimerEventHandler();
 
 void SetBLDCPWM(uint8_t pwm);
 
-uint8_t GetBLDCDirectionU3();
-
 void SetElecCycleU3(uint8_t i);
 
 void SetElecCycleU2(uint8_t i);

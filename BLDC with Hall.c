@@ -13,7 +13,7 @@ bit Hall_Mode_60deg = 1;
 sbit P15 = P1^5;
 
 uint8_t BLDCSpeed;
-uint8_t eleccycle = 0;
+uint8_t BLDCcurrentElecCycle = 0;
 
 static uint8_t BLDC_Previous_Cycle = 0;
 
@@ -32,12 +32,12 @@ void SetBLDCDirPWMU2(uint8_t pwm, bit dir) using 2
 
 void SetElecCycleU2(uint8_t i) using 2
 {
-	eleccycle = i;
+	BLDCcurrentElecCycle = i;
 }
 
 void SetElecCycleU3(uint8_t i) using 3
 {
-	eleccycle = i;
+	BLDCcurrentElecCycle = i;
 }
 
 void SetBLDCPWM(uint8_t pwm) using 2
@@ -46,9 +46,6 @@ void SetBLDCPWM(uint8_t pwm) using 2
 }
 
 bit GetBLDCDirection()
-{return BLDCReverse;}
-
-uint8_t GetBLDCDirectionU3() using 3
 {return BLDCReverse;}
 
 void UpdateHall() using 2
@@ -74,7 +71,7 @@ void HallGpioInit()
 	HCPort = 1;
 }
 
-uint8_t DetermineCurrentElecCycle(bit reverse) using 3
+uint8_t DetermineCurrentElecCycle(bit reverse)
 {	
 	if(HAPort)
 	{
@@ -147,12 +144,12 @@ uint8_t DetermineCurrentElecCycle(bit reverse) using 3
 	return 0;
 }
 
-void UpdateBLDCInverter() using 1
+void UpdateBLDCInverter()
 {
-	if(BLDC_Previous_Cycle!= eleccycle)
+	if(BLDC_Previous_Cycle!= BLDCcurrentElecCycle)
 	{
 		EA = 0;
-		switch(eleccycle)
+		switch(BLDCcurrentElecCycle)
 		{
 			case 1: {			
 				PMEN = 0X30;
@@ -255,6 +252,6 @@ void UpdateBLDCInverter() using 1
 		}
 		
 		EA = 1;
-		BLDC_Previous_Cycle= eleccycle;
+		BLDC_Previous_Cycle= BLDCcurrentElecCycle;
 	}
 }	
