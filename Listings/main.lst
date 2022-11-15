@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -8,10 +8,10 @@ COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE 
 
 line level    source
 
-   1          #include <N76E003.h>
-   2          #include <SVPWM.h>
-   3          #include <3PhaseInverter.h>
-   4          #include <BLDC with Hall.h>
+   1          #include "N76E003.h"
+   2          #include "SVPWM.h"
+   3          #include "3PhaseInverter.h"
+   4          #include "BLDC with Hall.h"
    5          #include "intrins.h"
    6          
    7          bit SVPWMmode = 0;
@@ -62,7 +62,7 @@ line level    source
   51   2          }
   52   1      }
   53          
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 2   
 
   54          void UartInit()
   55          {
@@ -126,7 +126,7 @@ line level    source
  113   1        EIE |= 0X04;
  114   1        
  115   1        T2CON |= 0X04;
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 3   
 
  116   1        
  117   1        EIPH |= 0X04;
@@ -190,10 +190,10 @@ line level    source
  175   1        TH0 = 0x2F;
  176   1        PulseCount = 64;
  177   1        if(ExecuteSVPBL_PWM < PulseCount) ExecuteSVPBL_PWM++;
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 4   
 
  178   1        if(ExecuteSVPBL_PWM > PulseCount) ExecuteSVPBL_PWM--;
- 179   1        SetMotorSpin(ExecuteSVPBL_PWM,1);
+ 179   1        //SetMotorSpin(ExecuteSVPBL_PWM,1);
  180   1        PulseCount = 0;
  181   1        TR0 = 1;
  182   1      }
@@ -254,7 +254,7 @@ line level    source
  237   2        }
  238   1      }
  239          
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 5   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 5   
 
  240          void PWM_Interrupu_Init()
  241          {
@@ -318,13 +318,13 @@ line level    source
  297   1        {   
  298   2            if(SVPReverseSpin)
  299   2              CalcElectricAngle = 255 - CalcElectricAngle;
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 6   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 6   
 
- 300   2            CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+ 300   2          //  CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
  301   2        }
  302   1        else
  303   1        {
- 304   2          BLDCTimerEventHandler();
+ 304   2          //BLDCTimerEventHandler();
  305   2        }
  306   1      }
  307          
@@ -353,10 +353,10 @@ line level    source
  330   1      //  EA = 1;
  331   1        Inverter_ControlGPIO_Init();
  332   1        HallGpioInit();
- 333   1        ADCInit();
- 334   1        SetMotorSpin(0,1);
- 335   1        TimerInit();
- 336   1      //  PWM_Interrupu_Init();
+ 333   1        //ADCInit();
+ 334   1        SetMotorSpin(65,1);
+ 335   1        //TimerInit();
+ 336   1        //PWM_Interrupu_Init();
  337   1        
  338   1        P0M1 &= 0xfb;
  339   1        P0M2 |= 0x04;
@@ -369,59 +369,63 @@ line level    source
  346   1      //  UartSendStr("DAS02418");
  347   1        while(1)
  348   1        {
- 349   2          for(i = 0;i < 255;i += 1)
+ 349   2          for(i = 0;i < 254;i += 1)
  350   2          { 
  351   3            
- 352   3        //  BLDCTimerEventHandler();
- 353   3        //    UpdateBLDCInverter(i);
- 354   3            delay(3000);
- 355   3      
- 356   3        //  CalculateInverterVectorsWidth_Polar(i);
- 357   3      /*      UART_Write_Int_Value(CalcElectricAngle);
- 358   3            if(HA)
- 359   3              UartSendStr("HA+");
- 360   3            else  
- 361   3              UartSendStr("HA-");
-C51 COMPILER V9.59.0.0   MAIN                                                              12/28/2018 18:52:31 PAGE 7   
+ 352   3        if(SVPDriveAngle < 251)
+ 353   3          SVPDriveAngle += SVPAngleStep;
+ 354   3        else
+ 355   3          SVPDriveAngle = 0;
+ 356   3        //  BLDCTimerEventHandler();
+ 357   3        //    UpdateBLDCInverter(i);
+ 358   3            delay(19);
+ 359   3      
+ 360   3          CalculateInverterVectorsWidth_Polar(i);
+ 361   3      /*      UART_Write_Int_Value(CalcElectricAngle);
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2022 14:23:37 PAGE 7   
 
- 362   3            
- 363   3            if(HB)
- 364   3              UartSendStr("HB+");
- 365   3            else  
- 366   3              UartSendStr("HB-");
- 367   3            
- 368   3            if(HC)
- 369   3              UartSendStr("HC+");
- 370   3            else  
- 371   3              UartSendStr("HC-");
- 372   3            switch(DetermineCurrentElecCycle(0))
- 373   3            {
- 374   3              case 0:
- 375   3                UartSendStr("HALL ERROR\r\n"); break;
- 376   3              case 1:
- 377   3                UartSendStr("HALL 1\r\n");break;
- 378   3              case 2:
- 379   3                UartSendStr("HALL 2\r\n");break;
- 380   3              case 3:
- 381   3                UartSendStr("HALL 3\r\n");break;
- 382   3              case 4:
- 383   3                UartSendStr("HALL 4\r\n");break;
- 384   3              case 5:
- 385   3                UartSendStr("HALL 5\r\n");break;
- 386   3              case 6:
- 387   3                UartSendStr("HALL 6\r\n");break;
- 388   3            }*/
- 389   3          }
- 390   2        }
- 391   1      }
+ 362   3            if(HA)
+ 363   3              UartSendStr("HA+");
+ 364   3            else  
+ 365   3              UartSendStr("HA-");
+ 366   3            
+ 367   3            if(HB)
+ 368   3              UartSendStr("HB+");
+ 369   3            else  
+ 370   3              UartSendStr("HB-");
+ 371   3            
+ 372   3            if(HC)
+ 373   3              UartSendStr("HC+");
+ 374   3            else  
+ 375   3              UartSendStr("HC-");
+ 376   3            switch(DetermineCurrentElecCycle(0))
+ 377   3            {
+ 378   3              case 0:
+ 379   3                UartSendStr("HALL ERROR\r\n"); break;
+ 380   3              case 1:
+ 381   3                UartSendStr("HALL 1\r\n");break;
+ 382   3              case 2:
+ 383   3                UartSendStr("HALL 2\r\n");break;
+ 384   3              case 3:
+ 385   3                UartSendStr("HALL 3\r\n");break;
+ 386   3              case 4:
+ 387   3                UartSendStr("HALL 4\r\n");break;
+ 388   3              case 5:
+ 389   3                UartSendStr("HALL 5\r\n");break;
+ 390   3              case 6:
+ 391   3                UartSendStr("HALL 6\r\n");break;
+ 392   3            }*/
+ 393   3          }
+ 394   2        }
+ 395   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1015    ----
+   CODE SIZE        =    973    ----
    CONSTANT SIZE    =     10    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     51       8
+   DATA SIZE        =     51      10
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      3       1
 END OF MODULE INFORMATION.

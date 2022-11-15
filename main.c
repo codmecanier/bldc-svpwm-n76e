@@ -1,7 +1,7 @@
-#include <N76E003.h>
-#include <SVPWM.h>
-#include <3PhaseInverter.h>
-#include <BLDC with Hall.h>
+#include "N76E003.h"
+#include "SVPWM.h"
+#include "3PhaseInverter.h"
+#include "BLDC with Hall.h"
 #include "intrins.h"
 
 bit SVPWMmode = 0;
@@ -176,7 +176,7 @@ void Timer0_ISR() interrupt 1
 	PulseCount = 64;
 	if(ExecuteSVPBL_PWM < PulseCount) ExecuteSVPBL_PWM++;
 	if(ExecuteSVPBL_PWM > PulseCount) ExecuteSVPBL_PWM--;
-	SetMotorSpin(ExecuteSVPBL_PWM,1);
+	//SetMotorSpin(ExecuteSVPBL_PWM,1);
 	PulseCount = 0;
 	TR0 = 1;
 }
@@ -297,11 +297,11 @@ void Timer3_Interr_ISR() interrupt 16 using 1
 	{		
 			if(SVPReverseSpin)
 				CalcElectricAngle = 255 - CalcElectricAngle;
-			CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
+		//	CalculateInverterVectorsWidth_Polar(CalcElectricAngle);
 	}
 	else
 	{
-		BLDCTimerEventHandler();
+		//BLDCTimerEventHandler();
 	}
 }
 
@@ -330,10 +330,10 @@ void main(void)
 //  EA = 1;
 	Inverter_ControlGPIO_Init();
 	HallGpioInit();
-	ADCInit();
-	SetMotorSpin(0,1);
-	TimerInit();
-//	PWM_Interrupu_Init();
+	//ADCInit();
+	SetMotorSpin(65,1);
+	//TimerInit();
+	//PWM_Interrupu_Init();
 	
 	P0M1 &= 0xfb;
 	P0M2 |= 0x04;
@@ -346,14 +346,18 @@ void main(void)
 //  UartSendStr("DAS02418");
 	while(1)
 	{
-		for(i = 0;i < 255;i += 1)
+		for(i = 0;i < 254;i += 1)
 		{	
 			
+	if(SVPDriveAngle < 251)
+		SVPDriveAngle += SVPAngleStep;
+	else
+		SVPDriveAngle = 0;
 	//	BLDCTimerEventHandler();
 	//		UpdateBLDCInverter(i);
-			delay(3000);
+			delay(19);
 
-	//	CalculateInverterVectorsWidth_Polar(i);
+		CalculateInverterVectorsWidth_Polar(i);
 /*			UART_Write_Int_Value(CalcElectricAngle);
 			if(HA)
 				UartSendStr("HA+");

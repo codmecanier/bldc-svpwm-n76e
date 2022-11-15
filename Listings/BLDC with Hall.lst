@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/28/2018 18:52:31 PAGE 1   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    11/14/2022 14:23:37 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BLDC_WITH_HALL
@@ -8,7 +8,7 @@ COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BLDC with Hall.c OPTIMIZE(8,SPEE
 
 line level    source
 
-   1          #include <N76E003.h>
+   1          #include "N76E003.h"
    2          #include "BLDC with Hall.h"
    3          #include "3PhaseInverter.h"
    4          
@@ -62,7 +62,7 @@ line level    source
   52              
   53            if(HA && HB && !HC)
   54              if(reverse)
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/28/2018 18:52:31 PAGE 2   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    11/14/2022 14:23:37 PAGE 2   
 
   55                return 6;
   56              else
@@ -126,7 +126,7 @@ line level    source
  114   2        }
  115   1        else
  116   1        {
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/28/2018 18:52:31 PAGE 3   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    11/14/2022 14:23:37 PAGE 3   
 
  117   2          if(HBPort)
  118   2          {
@@ -190,7 +190,7 @@ line level    source
  176   3            TA = 0X55;
  177   3            SFRS = 0;
  178   3            PWMCON0 |= 0X40;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/28/2018 18:52:31 PAGE 4   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    11/14/2022 14:23:37 PAGE 4   
 
  179   3            break;
  180   3          }
@@ -254,7 +254,7 @@ line level    source
  238   2            break;
  239   2        }
  240   1        EA = 1;
-C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    12/28/2018 18:52:31 PAGE 5   
+C51 COMPILER V9.59.0.0   BLDC_WITH_HALL                                                    11/14/2022 14:23:37 PAGE 5   
 
  241   1      } 
  242          

@@ -1,3 +1,5 @@
+#ifndef __N76E003_H___
+#define __N76E003_H___
 /*--------------------------------------------------------------------------
 N76E003.H
 
@@ -183,6 +185,7 @@ sbit P12        = P1^2;
 sbit P13				= P1^3;
 sbit SCL				= P1^3;
 sbit P14				= P1^4;
+sbit P15				= P1^5;
 sbit SDA				= P1^4;
 sbit P17				= P1^7;
 
@@ -272,3 +275,5 @@ sbit TB8_1      = SCON_1^3;
 sbit RB8_1      = SCON_1^2; 
 sbit TI_1       = SCON_1^1; 
 sbit RI_1       = SCON_1^0; 
+
+#endif
